@@ -1,8 +1,221 @@
-/*
+/* Image Manager Plugin Styles */
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+/* Rename Modal */
+.image-manager-rename-modal {
+	/* Use Obsidian's default modal sizing */
+}
 
-If your plugin does not need CSS, delete this file.
+.image-manager-rename-modal .modal-content {
+	padding: 1rem;
+}
 
-*/
+.image-manager-preview {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 1rem;
+	padding: 1rem;
+	background: var(--background-secondary);
+	border-radius: 8px;
+}
+
+.image-manager-preview img,
+.image-manager-preview-img {
+	max-width: 100%;
+	max-height: 200px;
+	object-fit: contain;
+	border-radius: 4px;
+}
+
+.image-manager-info {
+	margin-bottom: 1rem;
+}
+
+.image-manager-info ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.image-manager-info li {
+	padding: 0.25rem 0;
+	font-size: 0.875rem;
+	color: var(--text-muted);
+}
+
+.image-manager-info li strong {
+	color: var(--text-normal);
+}
+
+.image-manager-error {
+	color: var(--text-error);
+	margin-top: 0.5rem;
+	font-size: 0.875rem;
+}
+
+.image-manager-error-hidden {
+	display: none;
+}
+
+.image-manager-error-visible {
+	display: block;
+}
+
+.image-manager-hidden {
+	display: none;
+}
+
+/* Search Modal - Based on Image Inserter */
+.image-inserter-container .modal-close-button {
+	display: none;
+}
+
+.image-inserter-container .modal-content {
+	overflow-y: hidden;
+}
+
+.image-inserter-container .container {
+	z-index: 1;
+	position: relative;
+	max-width: 100%;
+}
+
+.image-inserter-container .container .input-group {
+	display: flex;
+}
+
+.image-inserter-container .container .query-input {
+	flex-grow: 1;
+}
+
+.image-inserter-container .container .selector {
+	margin-left: 8px;
+}
+
+.image-inserter-container .container .scroll-area {
+	overflow-x: hidden;
+	margin-top: 6px;
+	width: 100%;
+	max-height: 70vh;
+}
+
+.image-inserter-container .container .scroll-area.loading {
+	display: none;
+}
+
+.image-inserter-container .container .scroll-area .images-list {
+	display: grid;
+	grid-template-columns: repeat(1, 1fr);
+}
+
+@media only screen and (min-width: 600px) {
+	.image-inserter-container .container {
+		padding: 10px;
+	}
+
+	.image-inserter-container .container {
+		max-width: 80vw;
+	}
+
+	.image-inserter-container .container .scroll-area .images-list {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media only screen and (min-width: 768px) {
+	.image-inserter-container .container .scroll-area .images-list {
+		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+@media only screen and (min-width: 1200px) {
+	.image-inserter-container .container .scroll-area .images-list {
+		grid-template-columns: repeat(4, 1fr);
+	}
+}
+
+.image-inserter-container .container .scroll-area .images-list .query-result {
+	padding: 5px 10px;
+	cursor: pointer;
+	border-radius: 6px;
+}
+
+.image-inserter-container .container .scroll-area .images-list .query-result img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	box-shadow: none;
+	background-color: inherit;
+}
+
+.image-inserter-container .container .scroll-area .images-list .query-result.is-selected {
+	background-color: var(--background-tertiary);
+	box-shadow: 0 1px 3px rgb(0 0 0 / 12%), 0 1px 2px rgb(0 0 0 / 24%);
+}
+
+.image-inserter-container .container .scroll-area .pagination {
+	width: 100%;
+	margin-top: 24px;
+	margin-bottom: 24px;
+	display: flex;
+	justify-content: space-between;
+}
+
+.image-inserter-container .container .scroll-area .pagination .btn {
+	cursor: pointer;
+}
+
+/* Loading Animation */
+.image-inserter-container .loading-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 2rem;
+}
+
+.image-inserter-container .loading-container .loader-icon {
+	display: inline-block;
+	width: 24px;
+	height: 24px;
+	color: var(--text-normal);
+	animation: loader-spin 1s linear infinite;
+	transform-origin: center;
+}
+
+.image-inserter-container .loading-container .loader-icon svg {
+	width: 24px;
+	height: 24px;
+	display: block;
+}
+
+@keyframes loader-spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.image-inserter-container .container .scroll-area .no-result-container {
+	display: flex;
+	justify-content: center;
+	padding: 2rem;
+}
+
+/* Settings Groups */
+.setting-group-heading h3 {
+	margin: 1.5rem 0 0.75rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid var(--background-modifier-border);
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+.setting-group-heading:first-child h3 {
+	margin-top: 0;
+}
+
+/* File Picker Modal (hidden) */
+.image-manager-file-picker input[type="file"] {
+	display: none;
+}

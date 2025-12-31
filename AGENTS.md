@@ -10,27 +10,83 @@ This file serves as the **project-specific entry point** for AI agents working o
 
 <!--
 Source: Project-specific (not synced from reference repos)
-Last updated: [Maintain manually - this file is project-specific]
+Last updated: 2024-12-30
 Applicability: Plugin
 -->
 
 ### Project Overview
 
-- **Architecture**: Organized structure - main code in `src/main.ts` and settings in `src/settings.ts`
+- **Plugin Name**: Image Manager
+- **Description**: Insert, rename, and sort external images by transforming them into local files within your notes
+- **Architecture**: Modular service-based structure with separate concerns for image processing, storage, renaming, and property handling
+- **Key Design Decision**: Only user-initiated actions (paste, drag-drop, commands) trigger the rename prompt - external additions (git sync, file explorer) are ignored to prevent false positives
 
 ### Important Project-Specific Details
 
+This plugin unifies functionality from 5 existing plugins:
+1. **Image Inserter** (cloudy9101) - Remote image search from Unsplash, Pexels, Pixabay
+2. **Simple Image Inserter** (jdholtz) - Local file picker using OS native dialog
+3. **Paste Image Rename** (reorx) - Automatic rename dialog on paste/drop
+4. **Paste Image Into Property** (Nitero) - Insert images directly into frontmatter properties
+5. **Local Images Plus** (Sergei-Korneev) - Convert remote/external images to local files
+
+**MDX Support**: Uses patterns from `obsidian-bases-cms` and `obsidian-property-over-filename` for MDX frontmatter handling since Obsidian's native `processFrontMatter` only works with `.md` files.
+
+**SettingGroup Compatibility**: Uses the `settings-compat.ts` pattern for backward compatibility with Obsidian versions before 1.11.0.
+
 ### Maintenance Tasks
+
+- Keep API keys documentation up to date (users provide their own keys)
+- Monitor reference plugins for new features or breaking changes
+- Test with both MD and MDX files after changes
 
 ### Project-Specific Conventions
 
+- Image handling flows through `ImageProcessor` service
+- Storage location logic is centralized in `StorageManager`
+- All modals extend Obsidian's `Modal` class
+- User-initiated vs external actions are distinguished at the event handler level (not vault events)
+
 ### Project-Specific References
+
+**Local Projects** (symlinks to working copies in `.ref/local/`):
+- `property-over-filename` - MDX frontmatter cache patterns, service architecture
+- `bases-cms` - MDX frontmatter parsing/writing utilities
+- `alias-filename-history` - File extension filtering, debouncing patterns
+
+**Remote Plugins** (cloned to global `.ref/obsidian-dev/plugins/`, symlinked in `.ref/plugins/`):
+- `image-inserter` - Remote search modal, API integrations (Unsplash, Pexels, Pixabay)
+- `simple-image-inserter` - OS native file picker
+- `paste-image-rename` - Rename modal, name template system
+- `paste-image-property` - Frontmatter property insertion
+- `local-images-plus` - Remote-to-local conversion, content processing
 
 ### Overrides (Optional)
 
+- **API Keys**: Users must provide their own API keys for Unsplash (via proxy or direct), Pexels, and Pixabay
+- **Attachment Location**: Follows Obsidian's native setting by default, but can be overridden with template variables
+
 ### Key Files and Their Purposes
 
+| File | Purpose |
+|------|---------|
+| `src/main.ts` | Plugin entry point, event registration, command setup |
+| `src/settings.ts` | Settings interface and SettingTab with SettingGroup compat |
+| `src/types.ts` | Shared TypeScript interfaces |
+| `src/utils/settings-compat.ts` | SettingGroup backward compatibility (1.11.0+) |
+| `src/utils/mdx-frontmatter.ts` | MDX frontmatter parsing/writing |
+| `src/modals/RenameModal.ts` | Image rename dialog with name suggestions |
+| `src/modals/RemoteSearchModal.ts` | Unsplash/Pexels/Pixabay search interface |
+| `src/services/ImageProcessor.ts` | Core image handling and processing |
+| `src/services/StorageManager.ts` | File storage, path resolution, Obsidian attachment integration |
+| `src/services/PropertyHandler.ts` | Frontmatter/property insertion (MD and MDX) |
+| `src/services/RemoteImageService.ts` | API integrations for image services |
+
 ### Development Notes
+
+- **False Positive Prevention**: The rename dialog only triggers from our own event handlers (paste, drop, file picker, remote search). We do NOT listen to vault `create` events for prompting, which prevents false positives when images are added via git sync or other external means.
+- **MDX Files**: Obsidian's `metadataCache` and `processFrontMatter` don't work with MDX files. Use `parseMdxFrontmatter()` and `processMdxFrontMatter()` utilities instead.
+- **Settings Groups**: Use `createSettingsGroup()` from `settings-compat.ts` to support both Obsidian 1.11.0+ (with native `SettingGroup`) and older versions (with manual heading fallback).
 
 ---
 

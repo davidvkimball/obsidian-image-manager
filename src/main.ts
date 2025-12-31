@@ -1,99 +1,235 @@
-import {App, Editor, MarkdownView, Modal, Notice, Plugin} from 'obsidian';
-import {DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab} from "./settings";
+/**
+ * Image Manager Plugin
+ * Insert, rename, and sort external images by transforming them into local files
+ */
 
-// Remember to rename these classes and interfaces!
+import { Editor, MarkdownView, Notice, Plugin, TFile } from 'obsidian';
+import { DEFAULT_SETTINGS, ImageManagerSettings, ImageManagerSettingTab } from './settings';
+import { StorageManager } from './services/StorageManager';
+import { ImageProcessor } from './services/ImageProcessor';
+import { PropertyHandler } from './services/PropertyHandler';
+import { PasteHandler, DropHandler } from './services/PasteHandler';
+import { RemoteImageService } from './services/RemoteImageService';
+import { LocalConversionService } from './services/LocalConversionService';
+import { openFilePicker } from './modals/FilePickerModal';
+import { openRemoteSearch } from './modals/RemoteSearchModal';
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class ImageManagerPlugin extends Plugin {
+	settings: ImageManagerSettings;
 
-	async onload() {
+	// Services
+	private storageManager: StorageManager;
+	private imageProcessor: ImageProcessor;
+	private propertyHandler: PropertyHandler;
+	private pasteHandler: PasteHandler;
+	private dropHandler: DropHandler;
+	private remoteService: RemoteImageService;
+	private conversionService: LocalConversionService;
+
+	async onload(): Promise<void> {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		this.addRibbonIcon('dice', 'Sample', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
-		});
+		// Initialize services
+		this.initializeServices();
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status bar text');
+		// Register event handlers
+		this.registerEventHandlers();
 
-		// This adds a simple command that can be triggered anywhere
-		this.addCommand({
-			id: 'open-modal-simple',
-			name: 'Open modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
-			}
-		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'replace-selected',
-			name: 'Replace selected content',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				editor.replaceSelection('Sample editor command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-modal-complex',
-			name: 'Open modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
+		// Register commands
+		this.registerCommands();
+
+		// Add settings tab
+		this.addSettingTab(new ImageManagerSettingTab(this.app, this));
+
+		this.log('Image Manager plugin loaded');
+	}
+
+	onunload(): void {
+		this.log('Image Manager plugin unloaded');
+	}
+
+	/**
+	 * Initialize all services
+	 */
+	private initializeServices(): void {
+		this.storageManager = new StorageManager(this.app, this.settings);
+		this.remoteService = new RemoteImageService(this.settings);
+		this.imageProcessor = new ImageProcessor(this.app, this.settings, this.storageManager);
+		this.propertyHandler = new PropertyHandler(this.app, this.settings, this.storageManager, this.imageProcessor);
+		this.pasteHandler = new PasteHandler(
+			this.app,
+			this.settings,
+			this.imageProcessor,
+			this.propertyHandler
+		);
+		this.dropHandler = new DropHandler(this.app, this.settings, this.imageProcessor);
+		this.conversionService = new LocalConversionService(this.app, this.settings, this.storageManager, this.imageProcessor);
+	}
+
+	/**
+	 * Register event handlers
+	 */
+	private registerEventHandlers(): void {
+		// Editor paste handler
+		this.registerEvent(
+			this.app.workspace.on('editor-paste', (evt: ClipboardEvent, editor: Editor, view: MarkdownView) => {
+				void this.pasteHandler.handleEditorPaste(evt, editor, view);
+			})
+		);
+
+		// Editor drop handler
+		this.registerEvent(
+			this.app.workspace.on('editor-drop', (evt: DragEvent, editor: Editor, view: MarkdownView) => {
+				void this.dropHandler.handleEditorDrop(evt, editor, view);
+			})
+		);
+
+		// DOM paste handler for frontmatter properties
+		this.registerDomEvent(document, 'paste', (evt: ClipboardEvent) => {
+			void this.pasteHandler.handlePropertyPaste(evt);
+		}, { capture: true });
+
+		// File open handler for auto-conversion
+		// Register always, but check settings inside
+		this.registerEvent(
+			this.app.workspace.on('file-open', async (file: TFile | null) => {
+				if (this.settings.autoConvertRemoteImages && this.settings.convertOnNoteOpen) {
+					if (file && this.settings.supportedExtensions.includes(file.extension)) {
+						// Small delay to let file fully load
+						await new Promise(resolve => setTimeout(resolve, 500));
+						const count = await this.conversionService.processFile(file);
+						if (count > 0) {
+							new Notice(`Converted ${count} remote image(s) to local`);
+							// Refresh the view to show updated content
+							// The file modification will trigger Obsidian's UI refresh automatically
+						}
 					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
 				}
-				return false;
-			}
+			})
+		);
+	}
+
+	/**
+	 * Register commands
+	 */
+	private registerCommands(): void {
+		// Insert local image
+		this.addCommand({
+			id: 'insert-image',
+			name: 'Insert local image',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				openFilePicker(this.app, this.imageProcessor, this.propertyHandler);
+			},
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			new Notice("Click");
+		// Insert remote image
+		this.addCommand({
+			id: 'search-image',
+			name: 'Insert remote image',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				openRemoteSearch(
+					this.app,
+					this.settings,
+					this.remoteService,
+					this.imageProcessor,
+					this.propertyHandler
+				);
+			},
 		});
 
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+		// Insert remote image to property
+		this.addCommand({
+			id: 'insert-remote-image-to-property',
+			name: 'Insert remote image to property',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				openRemoteSearch(
+					this.app,
+					this.settings,
+					this.remoteService,
+					this.imageProcessor,
+					this.propertyHandler,
+					{ insertToProperty: true, propertyName: this.settings.defaultPropertyName }
+				);
+			},
+		});
 
+		// Insert local image to property
+		this.addCommand({
+			id: 'insert-local-image-to-property',
+			name: 'Insert local image to property',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				openFilePicker(
+					this.app,
+					this.imageProcessor,
+					this.propertyHandler,
+					true, // insertToProperty
+					this.settings.defaultPropertyName
+				);
+			},
+		});
+
+		// Convert remote images in current file
+		this.addCommand({
+			id: 'convert-remote-images',
+			name: 'Convert remote images',
+			editorCallback: async (editor: Editor, view: MarkdownView) => {
+				const file = view.file;
+				if (!file) {
+					new Notice('No active file');
+					return;
+				}
+
+				const count = await this.conversionService.processFile(file);
+				if (count > 0) {
+					new Notice(`Converted ${count} remote image(s) to local`);
+				} else {
+					new Notice('No remote images found');
+				}
+			},
+		});
+
+		// Convert remote images in all files
+		this.addCommand({
+			id: 'convert-all-remote-images',
+			name: 'Convert all remote images',
+			callback: async () => {
+				new Notice('Processing all files...');
+				const count = await this.conversionService.processAllFiles();
+				new Notice(`Converted ${count} remote image(s) to local`);
+			},
+		});
 	}
 
-	onunload() {
+	/**
+	 * Load settings from storage
+	 */
+	async loadSettings(): Promise<void> {
+		const data = await this.loadData() as Partial<ImageManagerSettings> | null;
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, data ?? {});
 	}
 
-	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<MyPluginSettings>);
-	}
-
-	async saveSettings() {
+	/**
+	 * Save settings to storage
+	 */
+	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
-	}
-}
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		let {contentEl} = this;
-		contentEl.setText('Woah!');
+		// Update services with new settings
+		this.storageManager?.updateSettings(this.settings);
+		this.imageProcessor?.updateSettings(this.settings);
+		this.propertyHandler?.updateSettings(this.settings);
+		this.pasteHandler?.updateSettings(this.settings);
+		this.dropHandler?.updateSettings(this.settings);
+		this.remoteService?.updateSettings(this.settings);
+		this.conversionService?.updateSettings(this.settings);
 	}
 
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
+	/**
+	 * Debug logging
+	 */
+	private log(...args: unknown[]): void {
+		if (this.settings?.debugMode) {
+			console.log('[Image Manager]', ...args);
+		}
 	}
 }
