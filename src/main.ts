@@ -193,7 +193,20 @@ export default class ImageManagerPlugin extends Plugin {
 			id: 'convert-all-remote-images',
 			name: 'Convert all remote images',
 			callback: async () => {
-				new Notice('Processing all files...');
+				const { openConfirmModal } = await import('./modals/ConfirmModal');
+				const result = await openConfirmModal(
+					this.app,
+					'Convert All Remote Images',
+					'This will scan all files in your vault and convert every remote image URL to a local file. This action cannot be undone.\n\nEach image will be downloaded and you\'ll be prompted to rename them. This may take a while if you have many images.\n\nAre you sure you want to proceed?',
+					'Yes, convert all images',
+					'Cancel'
+				);
+
+				if (!result.confirmed) {
+					return;
+				}
+
+				new Notice('Processing all files... This may take a while.');
 				const count = await this.conversionService.processAllFiles();
 				new Notice(`Converted ${count} remote image(s) to local`);
 			},

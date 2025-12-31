@@ -133,7 +133,7 @@ export class LocalConversionService {
 		// Check for inline code (`...`)
 		// We need to be careful - only match backticks that aren't part of fenced blocks
 		// First, mark all fenced code block positions
-		const fencedPositions: boolean[] = new Array(content.length).fill(false);
+		const fencedPositions: boolean[] = Array.from({ length: content.length }, () => false);
 		const fencedRegex = /```[\s\S]*?```/g;
 		while ((match = fencedRegex.exec(content)) !== null) {
 			for (let i = match.index; i < match.index + match[0].length; i++) {
@@ -177,7 +177,8 @@ export class LocalConversionService {
 			const fullMatch = match[0];
 			const alt = match[1] ?? '';
 			const url = match[2];
-			if (url && this.isExternalUrl(url)) {
+			// Only process if it's an external URL AND looks like an image URL
+			if (url && this.isExternalUrl(url) && this.isImageUrl(url)) {
 				const sourceFileRef = sourceFile; // Capture for closure
 				matches.push({
 					fullMatch,
@@ -204,8 +205,12 @@ export class LocalConversionService {
 							return link;
 						}
 						// Fallback - use relative path
-						const relativePath = this.storageManager.getRelativePath(sourceFileRef, this.app.vault.getAbstractFileByPath(localPath) as TFile);
-						return `![${alt}](${encodeURI(relativePath)})`;
+						const localFile = this.app.vault.getAbstractFileByPath(localPath);
+						if (localFile instanceof TFile) {
+							const relativePath = this.storageManager.getRelativePath(sourceFileRef, localFile);
+							return `![${alt}](${encodeURI(relativePath)})`;
+						}
+						return `![${alt}](${encodeURI(localPath)})`;
 					},
 				});
 			}
@@ -221,7 +226,8 @@ export class LocalConversionService {
 			}
 			const fullMatch = match[0];
 			const url = match[1];
-			if (url && this.isExternalUrl(url)) {
+			// Only process if it's an external URL AND looks like an image URL
+			if (url && this.isExternalUrl(url) && this.isImageUrl(url)) {
 				matches.push({
 					fullMatch,
 					url,
@@ -240,6 +246,52 @@ export class LocalConversionService {
 		try {
 			const parsed = new URL(url);
 			return ['http:', 'https:'].includes(parsed.protocol);
+		} catch {
+			return false;
+		}
+	}
+
+	/**
+	 * Check if a URL is likely an image URL
+	 * Returns false for known non-image embeds (YouTube, etc.)
+	 */
+	private isImageUrl(url: string): boolean {
+		try {
+			const parsed = new URL(url);
+			const hostname = parsed.hostname.toLowerCase();
+			const pathname = parsed.pathname.toLowerCase();
+
+			// Exclude known non-image embed domains
+			const nonImageDomains = [
+				'youtube.com',
+				'www.youtube.com',
+				'youtu.be',
+				'm.youtube.com',
+				'youtube-nocookie.com',
+				'www.youtube-nocookie.com',
+				'vimeo.com',
+				'www.vimeo.com',
+				'spotify.com',
+				'open.spotify.com',
+				'soundcloud.com',
+				'www.soundcloud.com',
+			];
+
+			if (nonImageDomains.some(domain => hostname === domain || hostname.endsWith('.' + domain))) {
+				return false;
+			}
+
+			// Check for image file extensions in the path
+			const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico', '.tiff', '.tif'];
+			const hasImageExtension = imageExtensions.some(ext => pathname.endsWith(ext));
+
+			// Check for image extensions in query parameters (some CDNs use this)
+			const searchParams = parsed.searchParams.toString().toLowerCase();
+			const hasImageInQuery = imageExtensions.some(ext => searchParams.includes(ext));
+
+			// Only process if it has an image extension
+			// This is conservative - we only process URLs that clearly look like images
+			return hasImageExtension || hasImageInQuery;
 		} catch {
 			return false;
 		}

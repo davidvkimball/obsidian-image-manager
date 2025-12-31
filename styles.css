@@ -202,6 +202,10 @@
 	padding: 2rem;
 }
 
+.image-inserter-container .container .scroll-area .no-result-container.error-text {
+	color: var(--text-error);
+}
+
 /* Settings Groups */
 .setting-group-heading h3 {
 	margin: 1.5rem 0 0.75rem;
@@ -218,4 +222,26 @@
 /* File Picker Modal (hidden) */
 .image-manager-file-picker input[type="file"] {
 	display: none;
+}
+
+/* Confirmation Modal */
+.image-manager-confirm-message {
+	margin-bottom: 1.5rem;
+	line-height: 1.6;
+}
+
+.image-manager-confirm-message p {
+	margin: 0.5rem 0;
+	white-space: pre-line;
+}
+
+.image-manager-confirm-buttons {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+	margin-top: 1rem;
+}
+
+.image-manager-confirm-buttons button {
+	min-width: 100px;
 }

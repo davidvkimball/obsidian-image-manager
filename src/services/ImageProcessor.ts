@@ -9,7 +9,6 @@ import { StorageManager } from './StorageManager';
 import { renderTemplate, buildTemplateVariables, isTemplateMeaningful } from '../utils/template';
 import { openRenameModal } from '../modals/RenameModal';
 import { openDescriptiveImageModal } from '../modals/DescriptiveImageModal';
-import { toKebabCase } from '../utils/kebab-case';
 
 export class ImageProcessor {
 	private app: App;

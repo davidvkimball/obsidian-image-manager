@@ -315,13 +315,9 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 			group.addSetting((setting) => {
 				setting
 					.setName('Custom format template')
-					// False positive: "{image-url}" is a placeholder variable
-					// eslint-disable-next-line obsidianmd/ui/sentence-case
 					.setDesc('Use {image-url} as placeholder for the image path')
 					.addText((text) => {
 						text
-							// False positive: "{image-url}" is a placeholder variable
-							// eslint-disable-next-line obsidianmd/ui/sentence-case
 							.setPlaceholder('{image-url}')
 							.setValue(this.plugin.settings.customPropertyLinkFormat)
 							.onChange(async (value) => {
