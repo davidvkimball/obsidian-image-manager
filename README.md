@@ -117,6 +117,7 @@ This plugin unifies functionality from the following excellent plugins:
 - [Paste Image Rename](https://github.com/reorx/obsidian-paste-image-rename) by reorx - Automatic rename dialog on paste/drop
 - [Paste Image Into Property](https://github.com/Nitero/obsidian-paste-image-into-property) by Nitero - Insert images directly into frontmatter properties
 - [Local Images Plus](https://github.com/Sergei-Korneev/obsidian-local-images-plus) by Sergei-Korneev - Convert remote/external images to local files
+- [Simple Banner](https://github.com/eatcodeplay/obsidian-simple-banner) by eatcodeplay - Banner image display from frontmatter properties
 
 Additional inspiration and patterns from:
 

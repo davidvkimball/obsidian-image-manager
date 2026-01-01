@@ -261,3 +261,260 @@
 .setting-group-heading:not(:has(+ .setting-item)) h3 {
     border-bottom: 1px solid var(--background-modifier-border);
 }
+
+/* ==========================================
+   Banner Image Styles
+   ========================================== */
+
+/* Default CSS Variables for Banner */
+body {
+	/* Banner Variables */
+	--im-banner-padding: 8px;
+	--im-banner-radius: 8px 8px 8px 8px;
+	--im-banner-height: 240px;
+	--im-banner-url: none;
+	--im-banner-repeat: no-repeat;
+	--im-banner-size: cover;
+	--im-banner-img-x: 0px;
+	--im-banner-img-y: 0px;
+	--im-banner-note-offset: -32px;
+	--im-banner-view-offset: 0px;
+	--im-banner-mask: linear-gradient(180deg, transparent 25%, var(--background-primary));
+	--im-banner-mask-webkit: -webkit-linear-gradient(270deg, transparent 25%, var(--background-primary));
+
+	/* Icon Variables */
+	--im-banner-icon-align-h: flex-start;
+	--im-banner-icon-align-v: flex-end;
+	--im-banner-icon-size-w: 96px;
+	--im-banner-icon-size-h: 96px;
+	--im-banner-icon-offset-x: 0px;
+	--im-banner-icon-offset-y: -24px;
+	--im-banner-icon-radius: 8px;
+	--im-banner-icon-value: '';
+	--im-banner-icon-fontsize: inherit;
+	--im-banner-icon-background: rgb(from var(--background-primary) r g b / 80%);
+	--im-banner-icon-border: 2px;
+}
+
+/* Banner Container */
+div.image-manager-banner {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	width: calc(100% - (var(--im-banner-padding) * 2));
+	height: 100%;
+	margin-left: var(--im-banner-padding);
+	max-height: var(--im-banner-height);
+	padding: var(--size-4-3) var(--size-4-3) 0 var(--size-4-3);
+	transform: translate3d(0, 0, 0);
+	user-select: none;
+}
+
+/* Banner video element */
+div.image-manager-banner > video {
+	inset: 0;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	z-index: 2;
+	animation: im-banner-fade-in 0.7s linear forwards, im-banner-anim 0.8s ease-out;
+	object-position: calc(50% + var(--im-banner-img-x)) calc(50% + var(--im-banner-img-y));
+	border-radius: var(--im-banner-radius);
+	transition: object-position 0.5s ease-in-out;
+	will-change: object-position;
+	transform: translate3d(0, 0, 0);
+}
+
+/* Banner image background (::before pseudo-element) */
+div.image-manager-banner::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	box-shadow: inset 0 2px 4px 1px rgba(0, 0, 0, 0.1);
+	border-radius: var(--im-banner-radius);
+	background-color: rgba(0, 0, 0, 0.2);
+	background-image: var(--im-banner-url);
+	background-repeat: var(--im-banner-repeat);
+	background-size: var(--im-banner-size);
+	background-position-x: calc(50% + var(--im-banner-img-x));
+	background-position-y: calc(50% + var(--im-banner-img-y));
+	animation: im-banner-fade-in 0.7s linear forwards, im-banner-anim 0.8s ease-out;
+	transition: background-position-x 0.5s ease-in-out, background-position-y 0.5s ease-in-out;
+	will-change: transform, background-position-x, background-position-y;
+	transform-style: preserve-3d;
+	backface-visibility: hidden;
+	transform: translate3d(0, 0, 0);
+}
+
+/* Banner fade overlay (::after pseudo-element) */
+div.image-manager-banner::after {
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	content: '';
+	border-radius: var(--im-banner-radius);
+	background: var(--im-banner-mask);
+	background: var(--im-banner-mask-webkit);
+	transform: translate3d(0, 0, 0);
+	overflow: hidden;
+}
+
+/* Static state (no animation) */
+div.image-manager-banner.static::after {
+	animation: none;
+}
+
+div.image-manager-banner.static::before {
+	animation: none;
+}
+
+/* Content after banner */
+div.image-manager-banner + div {
+	position: relative;
+	z-index: 4;
+}
+
+/* Banner animations */
+@keyframes im-banner-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes im-banner-anim {
+	from {
+		transform: translate3d(0, -10px, 0);
+	}
+	to {
+		transform: translate3d(0, 0, 0);
+	}
+}
+
+@keyframes im-banner-icon-anim {
+	from {
+		transform: translate(var(--im-banner-icon-offset-x), calc(var(--im-banner-icon-offset-y) - 10px));
+		opacity: 0;
+	}
+	to {
+		transform: translate(var(--im-banner-icon-offset-x), var(--im-banner-icon-offset-y));
+		opacity: 1;
+	}
+}
+
+/* Icon Container */
+div.image-manager-banner > div.banner-icon {
+	position: relative;
+	display: flex;
+	justify-content: var(--im-banner-icon-align-h);
+	align-items: var(--im-banner-icon-align-v);
+	width: inherit;
+	height: inherit;
+	z-index: 4;
+	margin: 0 auto;
+	max-width: var(--file-line-width);
+	transform: translate(0, 0);
+	animation: im-banner-fade-in 0.7s linear forwards, im-banner-icon-anim 0.8s ease-out;
+	will-change: transform, opacity;
+}
+
+div.image-manager-banner > div.banner-icon > div {
+	display: block;
+	position: relative;
+	width: var(--im-banner-icon-size-w);
+	height: var(--im-banner-icon-size-h);
+	background-color: var(--im-banner-icon-background);
+	transform: translate(var(--im-banner-icon-offset-x), var(--im-banner-icon-offset-y));
+	border-radius: var(--im-banner-icon-radius);
+	border: var(--im-banner-icon-border) solid var(--background-primary);
+	z-index: 2;
+	overflow: hidden;
+}
+
+/* Text icon */
+div.image-manager-banner > div.banner-icon > div[data-type="text"]::after {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1;
+	text-transform: uppercase;
+	content: var(--im-banner-icon-value);
+	color: var(--text-normal);
+	line-height: 0;
+	font-size: var(--im-banner-icon-fontsize, inherit);
+	user-select: none;
+}
+
+/* Link/image icon */
+div.image-manager-banner > div.banner-icon > div[data-type="link"]::after {
+	position: absolute;
+	text-transform: uppercase;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1;
+	transform: translate(0, 0);
+	content: '';
+	background-image: var(--im-banner-icon-value);
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+	overflow: hidden;
+}
+
+/* Static icon (no animation) */
+div.image-manager-banner.static > div.banner-icon {
+	animation: none;
+}
+
+/* Mobile adjustments */
+body.is-tablet div.image-manager-banner {
+	width: calc(100% - (var(--im-banner-padding) * 2));
+}
+
+body.is-phone div.image-manager-banner {
+	width: calc(100% - (var(--im-banner-padding) * 2));
+}
+
+body.is-tablet div.image-manager-banner > div.banner-icon {
+	left: calc(var(--size-4-2) * -1);
+}
+
+body.is-phone div.image-manager-banner > div.banner-icon {
+	left: auto;
+}
+
+/* Frontmatter Overrides for views with banner */
+.workspace-leaf-content[data-im-banner] .view-content > .markdown-source-view.mod-cm6 > .cm-editor > .cm-scroller,
+.workspace-leaf-content[data-im-banner] .view-content .markdown-preview-view {
+	padding-top: var(--im-banner-height, 240px);
+}
+
+.workspace-leaf-content[data-im-banner] .view-content > .markdown-source-view.mod-cm6 > .cm-editor > .cm-scroller .inline-embed .el-pre.mod-frontmatter.mod-ui,
+.workspace-leaf-content[data-im-banner] .view-content > .markdown-source-view.mod-cm6 > .cm-editor > .cm-scroller .inline-embed .markdown-preview-view,
+.workspace-leaf-content[data-im-banner] .view-content .markdown-preview-view .inline-embed .el-pre.mod-frontmatter.mod-ui,
+.workspace-leaf-content[data-im-banner] .view-content .markdown-preview-view .inline-embed .markdown-preview-view {
+	padding-top: initial;
+}
+
+.workspace-leaf-content[data-im-banner] .view-content > .markdown-source-view.mod-cm6 > .cm-editor > .cm-scroller .cm-sizer {
+	position: relative;
+	z-index: 1;
+	margin-top: var(--im-banner-note-offset, 0);
+}
+
+.workspace-leaf-content[data-im-banner][data-mode="source"] .view-content > .markdown-source-view.mod-cm6 > .cm-editor > .cm-scroller .cm-sizer {
+	margin-top: 0;
+}
+
+.workspace-leaf-content[data-im-banner] .view-content {
+	margin-top: var(--im-banner-view-offset, 0);
+}

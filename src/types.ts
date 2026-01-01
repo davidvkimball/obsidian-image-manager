@@ -55,6 +55,173 @@ export enum AttachmentLocation {
 }
 
 /**
+ * Device types for banner settings
+ */
+export enum DeviceType {
+	Desktop = 'desktop',
+	Tablet = 'tablet',
+	Phone = 'phone',
+}
+
+/**
+ * Icon type for banner icons
+ */
+export enum BannerIconType {
+	Link = 'link',
+	Text = 'text',
+}
+
+/**
+ * Content type for banner (image or video)
+ */
+export enum BannerContentType {
+	Image = 'image',
+	Video = 'video',
+}
+
+/**
+ * Device-specific banner settings
+ */
+export interface BannerDeviceSettings {
+	// Core banner settings
+	enabled: boolean;
+	height: number;
+	viewOffset: number;
+	noteOffset: number;
+	borderRadius: [number, number, number, number];
+	padding: number;
+	fade: boolean;
+	
+	// Icon settings
+	iconEnabled: boolean;
+	iconSize: number;
+	iconRadius: number;
+	iconBackground: boolean;
+	iconBorder: number;
+	iconAlignmentH: 'flex-start' | 'center' | 'flex-end';
+	iconAlignmentV: 'flex-start' | 'center' | 'flex-end';
+	iconOffsetX: number;
+	iconOffsetY: number;
+}
+
+/**
+ * Banner property settings (global, not device-specific)
+ */
+export interface BannerPropertySettings {
+	imageProperty: string;
+	iconProperty: string;
+}
+
+/**
+ * Complete banner settings
+ */
+export interface BannerSettings {
+	properties: BannerPropertySettings;
+	desktop: BannerDeviceSettings;
+	tablet: BannerDeviceSettings;
+	phone: BannerDeviceSettings;
+}
+
+/**
+ * Parsed banner image options
+ */
+export interface BannerImageOptions {
+	url: string;
+	external: boolean;
+	x: number;
+	y: number;
+	type: BannerContentType | null;
+	repeatable: boolean;
+}
+
+/**
+ * Banner data for a specific view
+ */
+export interface BannerData {
+	filepath: string | null;
+	image: string | null;
+	icon: string | null;
+	viewMode: 'source' | 'preview' | null;
+	lastViewMode: 'source' | 'preview' | null;
+	isImageChange: boolean;
+	isImagePropsUpdate: boolean;
+	needsUpdate: boolean;
+}
+
+/**
+ * Default device-specific banner settings
+ */
+export const DEFAULT_BANNER_DEVICE_SETTINGS: Record<DeviceType, BannerDeviceSettings> = {
+	[DeviceType.Desktop]: {
+		enabled: true,
+		height: 240,
+		viewOffset: 0,
+		noteOffset: -32,
+		borderRadius: [8, 8, 8, 8],
+		padding: 8,
+		fade: true,
+		iconEnabled: false,
+		iconSize: 96,
+		iconRadius: 8,
+		iconBackground: true,
+		iconBorder: 2,
+		iconAlignmentH: 'flex-start',
+		iconAlignmentV: 'flex-end',
+		iconOffsetX: 0,
+		iconOffsetY: -24,
+	},
+	[DeviceType.Tablet]: {
+		enabled: true,
+		height: 190,
+		viewOffset: 0,
+		noteOffset: -32,
+		borderRadius: [8, 8, 8, 8],
+		padding: 8,
+		fade: true,
+		iconEnabled: false,
+		iconSize: 96,
+		iconRadius: 8,
+		iconBackground: true,
+		iconBorder: 2,
+		iconAlignmentH: 'flex-start',
+		iconAlignmentV: 'flex-end',
+		iconOffsetX: 0,
+		iconOffsetY: -24,
+	},
+	[DeviceType.Phone]: {
+		enabled: true,
+		height: 160,
+		viewOffset: 0,
+		noteOffset: -32,
+		borderRadius: [8, 8, 8, 8],
+		padding: 8,
+		fade: true,
+		iconEnabled: false,
+		iconSize: 56,
+		iconRadius: 8,
+		iconBackground: true,
+		iconBorder: 2,
+		iconAlignmentH: 'flex-start',
+		iconAlignmentV: 'flex-end',
+		iconOffsetX: 0,
+		iconOffsetY: -24,
+	},
+};
+
+/**
+ * Default banner settings
+ */
+export const DEFAULT_BANNER_SETTINGS: BannerSettings = {
+	properties: {
+		imageProperty: 'banner',
+		iconProperty: 'icon',
+	},
+	desktop: { ...DEFAULT_BANNER_DEVICE_SETTINGS[DeviceType.Desktop] },
+	tablet: { ...DEFAULT_BANNER_DEVICE_SETTINGS[DeviceType.Tablet] },
+	phone: { ...DEFAULT_BANNER_DEVICE_SETTINGS[DeviceType.Phone] },
+};
+
+/**
  * Plugin settings interface
  */
 export interface ImageManagerSettings {
@@ -96,6 +263,9 @@ export interface ImageManagerSettings {
 	insertReferral: boolean; // Insert attribution text (e.g., "Photo by [author] on [provider]")
 	insertBackLink: boolean; // Insert backlink before attribution (e.g., "[Backlink](url) | Photo by...")
 	appendReferral: boolean; // Append referral at end of file when inserting to frontmatter
+	
+	// Banner Settings
+	banner: BannerSettings;
 	
 	// Advanced
 	supportedExtensions: string[];
@@ -144,6 +314,9 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	insertReferral: true, // Default to true (attribution)
 	insertBackLink: false, // Default to false
 	appendReferral: false, // Default to false
+	
+	// Banner Settings
+	banner: { ...DEFAULT_BANNER_SETTINGS },
 	
 	// Advanced
 	supportedExtensions: ['md', 'mdx'],

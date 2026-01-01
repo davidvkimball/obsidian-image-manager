@@ -3,7 +3,7 @@
  * Settings tab with SettingGroup compatibility for Obsidian 1.11.0+
  */
 
-import { App, PluginSettingTab } from 'obsidian';
+import { App, Platform, PluginSettingTab } from 'obsidian';
 import { createSettingsGroup } from './utils/settings-compat';
 import {
 	ImageManagerSettings,
@@ -13,6 +13,8 @@ import {
 	ImageSize,
 	PropertyLinkFormat,
 	AttachmentLocation,
+	DeviceType,
+	DEFAULT_BANNER_DEVICE_SETTINGS,
 } from './types';
 import type ImageManagerPlugin from './main';
 
@@ -45,6 +47,9 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 
 		// Rename Options
 		this.renderRenameSettings(containerEl);
+
+		// Banner Images
+		this.renderBannerSettings(containerEl);
 
 		// Advanced
 		this.renderAdvancedSettings(containerEl);
@@ -531,6 +536,313 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 						});
 				});
 		});
+	}
+
+	/**
+	 * Get the current device type
+	 */
+	private getCurrentDevice(): DeviceType {
+		if (Platform.isPhone) {
+			return DeviceType.Phone;
+		}
+		if (Platform.isTablet) {
+			return DeviceType.Tablet;
+		}
+		return DeviceType.Desktop;
+	}
+
+	/**
+	 * Helper to preserve scroll position when re-rendering settings
+	 */
+	private refreshWithScrollPreserve(containerEl: HTMLElement): void {
+		const scrollContainer = containerEl.closest('.vertical-tab-content') ||
+			containerEl.closest('.settings-content') ||
+			containerEl.parentElement;
+		const scrollTop = scrollContainer?.scrollTop || 0;
+
+		this.display();
+
+		requestAnimationFrame(() => {
+			if (scrollContainer) {
+				scrollContainer.scrollTop = scrollTop;
+			}
+		});
+	}
+
+	private renderBannerSettings(containerEl: HTMLElement): void {
+		const group = createSettingsGroup(containerEl, 'Banner images');
+		const currentDevice = this.getCurrentDevice();
+		const deviceSettings = this.plugin.settings.banner[currentDevice];
+		const defaultDeviceSettings = DEFAULT_BANNER_DEVICE_SETTINGS[currentDevice];
+		const propertySettings = this.plugin.settings.banner.properties;
+
+		// Device-specific enable toggle
+		group.addSetting((setting) => {
+			setting
+				.setName('Show banner')
+				.setDesc(`Enable or disable banners on your ${currentDevice} device`)
+				.addToggle((toggle) => {
+					toggle
+						.setValue(deviceSettings.enabled)
+						.onChange(async (value) => {
+							this.plugin.settings.banner[currentDevice].enabled = value;
+							await this.plugin.saveSettings();
+							this.refreshWithScrollPreserve(containerEl);
+						});
+				});
+		});
+
+		// Only show other settings if enabled
+		if (!deviceSettings.enabled) {
+			return;
+		}
+
+		// Banner height
+		group.addSetting((setting) => {
+			setting
+				.setName('Height')
+				.setDesc(`Height of the banner on your ${currentDevice} device (in pixels)`)
+				.addText((text) => {
+					text
+						.setPlaceholder(String(defaultDeviceSettings.height))
+						.setValue(String(deviceSettings.height))
+						.onChange(async (value) => {
+							const num = parseInt(value, 10);
+							if (!isNaN(num) && num > 0) {
+								this.plugin.settings.banner[currentDevice].height = num;
+								await this.plugin.saveSettings();
+							}
+						});
+				});
+		});
+
+		// Banner padding
+		group.addSetting((setting) => {
+			setting
+				.setName('Padding')
+				.setDesc('Padding of the banner from the edges of the note (in pixels)')
+				.addText((text) => {
+					text
+						.setPlaceholder(String(defaultDeviceSettings.padding))
+						.setValue(String(deviceSettings.padding))
+						.onChange(async (value) => {
+							const num = parseInt(value, 10);
+							if (!isNaN(num) && num >= 0) {
+								this.plugin.settings.banner[currentDevice].padding = num;
+								await this.plugin.saveSettings();
+							}
+						});
+				});
+		});
+
+		// Note offset
+		group.addSetting((setting) => {
+			setting
+				.setName('Note offset')
+				.setDesc('Move the position of the note content (in pixels)')
+				.addText((text) => {
+					text
+						.setPlaceholder(String(defaultDeviceSettings.noteOffset))
+						.setValue(String(deviceSettings.noteOffset))
+						.onChange(async (value) => {
+							const num = parseInt(value, 10);
+							if (!isNaN(num)) {
+								this.plugin.settings.banner[currentDevice].noteOffset = num;
+								await this.plugin.saveSettings();
+							}
+						});
+				});
+		});
+
+		// View offset
+		group.addSetting((setting) => {
+			setting
+				.setName('View offset')
+				.setDesc('Move the position of the view content (in pixels)')
+				.addText((text) => {
+					text
+						.setPlaceholder(String(defaultDeviceSettings.viewOffset))
+						.setValue(String(deviceSettings.viewOffset))
+						.onChange(async (value) => {
+							const num = parseInt(value, 10);
+							if (!isNaN(num)) {
+								this.plugin.settings.banner[currentDevice].viewOffset = num;
+								await this.plugin.saveSettings();
+							}
+						});
+				});
+		});
+
+		// Fade
+		group.addSetting((setting) => {
+			setting
+				.setName('Fade')
+				.setDesc('Fade the image out towards the content')
+				.addToggle((toggle) => {
+					toggle
+						.setValue(deviceSettings.fade)
+						.onChange(async (value) => {
+							this.plugin.settings.banner[currentDevice].fade = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		});
+
+		// Frontmatter property settings (global, not device-specific)
+		group.addSetting((setting) => {
+			setting
+				.setName('Banner property')
+				.setDesc('Name of the banner property this plugin will look for in the frontmatter')
+				.addText((text) => {
+					text
+						// False positive: "banner" is a property name placeholder, not UI text
+						// eslint-disable-next-line obsidianmd/ui/sentence-case
+						.setPlaceholder('banner')
+						.setValue(propertySettings.imageProperty)
+						.onChange(async (value) => {
+							this.plugin.settings.banner.properties.imageProperty = value || 'banner';
+							await this.plugin.saveSettings();
+						});
+				});
+		});
+
+		group.addSetting((setting) => {
+			setting
+				.setName('Icon property')
+				.setDesc('Name of the icon property this plugin will look for in the frontmatter')
+				.addText((text) => {
+					text
+						// False positive: "icon" is a property name placeholder, not UI text
+						// eslint-disable-next-line obsidianmd/ui/sentence-case
+						.setPlaceholder('icon')
+						.setValue(propertySettings.iconProperty)
+						.onChange(async (value) => {
+							this.plugin.settings.banner.properties.iconProperty = value || 'icon';
+							await this.plugin.saveSettings();
+						});
+				});
+		});
+
+		// Icon settings
+		group.addSetting((setting) => {
+			setting
+				.setName('Show icon')
+				.setDesc('Enable or disable the icon')
+				.addToggle((toggle) => {
+					toggle
+						.setValue(deviceSettings.iconEnabled)
+						.onChange(async (value) => {
+							this.plugin.settings.banner[currentDevice].iconEnabled = value;
+							await this.plugin.saveSettings();
+							this.refreshWithScrollPreserve(containerEl);
+						});
+				});
+		});
+
+		// Only show icon settings if enabled
+		if (deviceSettings.iconEnabled) {
+			group.addSetting((setting) => {
+				setting
+					.setName('Icon size')
+					.setDesc('Size of the icon (in pixels)')
+					.addText((text) => {
+						text
+							.setPlaceholder(String(defaultDeviceSettings.iconSize))
+							.setValue(String(deviceSettings.iconSize))
+							.onChange(async (value) => {
+								const num = parseInt(value, 10);
+								if (!isNaN(num) && num > 0) {
+									this.plugin.settings.banner[currentDevice].iconSize = num;
+									await this.plugin.saveSettings();
+								}
+							});
+					});
+			});
+
+			group.addSetting((setting) => {
+				setting
+					.setName('Icon background')
+					.setDesc('Enable or disable the icon background')
+					.addToggle((toggle) => {
+						toggle
+							.setValue(deviceSettings.iconBackground)
+							.onChange(async (value) => {
+								this.plugin.settings.banner[currentDevice].iconBackground = value;
+								await this.plugin.saveSettings();
+							});
+					});
+			});
+
+			group.addSetting((setting) => {
+				setting
+					.setName('Icon border size')
+					.setDesc('Size of the icon border (in pixels)')
+					.addText((text) => {
+						text
+							.setPlaceholder(String(defaultDeviceSettings.iconBorder))
+							.setValue(String(deviceSettings.iconBorder))
+							.onChange(async (value) => {
+								const num = parseInt(value, 10);
+								if (!isNaN(num) && num >= 0) {
+									this.plugin.settings.banner[currentDevice].iconBorder = num;
+									await this.plugin.saveSettings();
+								}
+							});
+					});
+			});
+
+			group.addSetting((setting) => {
+				setting
+					.setName('Icon border radius')
+					.setDesc('Size of the icon border radius (in pixels)')
+					.addText((text) => {
+						text
+							.setPlaceholder(String(defaultDeviceSettings.iconRadius))
+							.setValue(String(deviceSettings.iconRadius))
+							.onChange(async (value) => {
+								const num = parseInt(value, 10);
+								if (!isNaN(num) && num >= 0) {
+									this.plugin.settings.banner[currentDevice].iconRadius = num;
+									await this.plugin.saveSettings();
+								}
+							});
+					});
+			});
+
+			group.addSetting((setting) => {
+				setting
+					.setName('Icon alignment - horizontal')
+					.setDesc('Horizontal alignment of the icon')
+					.addDropdown((dropdown) => {
+						dropdown
+							.addOption('flex-start', 'Left')
+							.addOption('center', 'Center')
+							.addOption('flex-end', 'Right')
+							.setValue(deviceSettings.iconAlignmentH)
+							.onChange(async (value) => {
+								this.plugin.settings.banner[currentDevice].iconAlignmentH = value as 'flex-start' | 'center' | 'flex-end';
+								await this.plugin.saveSettings();
+							});
+					});
+			});
+
+			group.addSetting((setting) => {
+				setting
+					.setName('Icon alignment - vertical')
+					.setDesc('Vertical alignment of the icon')
+					.addDropdown((dropdown) => {
+						dropdown
+							.addOption('flex-start', 'Top')
+							.addOption('center', 'Center')
+							.addOption('flex-end', 'Bottom')
+							.setValue(deviceSettings.iconAlignmentV)
+							.onChange(async (value) => {
+								this.plugin.settings.banner[currentDevice].iconAlignmentV = value as 'flex-start' | 'center' | 'flex-end';
+								await this.plugin.saveSettings();
+							});
+					});
+			});
+		}
 	}
 
 	private renderAdvancedSettings(containerEl: HTMLElement): void {

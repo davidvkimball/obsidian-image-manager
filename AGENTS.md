@@ -60,6 +60,8 @@ This plugin unifies functionality from 5 existing plugins:
 - `paste-image-rename` - Rename modal, name template system
 - `paste-image-property` - Frontmatter property insertion
 - `local-images-plus` - Remote-to-local conversion, content processing
+- `obsidian-simple-banner` - Banner image display from frontmatter property, device-specific settings
+- `pixel-banner` - Advanced banner implementation (for reference/comparison)
 
 ### Overrides (Optional)
 
@@ -81,6 +83,7 @@ This plugin unifies functionality from 5 existing plugins:
 | `src/services/StorageManager.ts` | File storage, path resolution, Obsidian attachment integration |
 | `src/services/PropertyHandler.ts` | Frontmatter/property insertion (MD and MDX) |
 | `src/services/RemoteImageService.ts` | API integrations for image services |
+| `src/services/BannerService.ts` | Banner image rendering from frontmatter properties |
 
 ### Development Notes
 

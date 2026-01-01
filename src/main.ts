@@ -3,7 +3,7 @@
  * Insert, rename, and sort external images by transforming them into local files
  */
 
-import { Editor, MarkdownView, Notice, Plugin, TFile } from 'obsidian';
+import { Editor, MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 import { DEFAULT_SETTINGS, ImageManagerSettings, ImageManagerSettingTab } from './settings';
 import { StorageManager } from './services/StorageManager';
 import { ImageProcessor } from './services/ImageProcessor';
@@ -11,6 +11,7 @@ import { PropertyHandler } from './services/PropertyHandler';
 import { PasteHandler, DropHandler } from './services/PasteHandler';
 import { RemoteImageService } from './services/RemoteImageService';
 import { LocalConversionService } from './services/LocalConversionService';
+import { BannerService } from './services/BannerService';
 import { openFilePicker } from './modals/FilePickerModal';
 import { openRemoteSearch } from './modals/RemoteSearchModal';
 
@@ -25,6 +26,7 @@ export default class ImageManagerPlugin extends Plugin {
 	private dropHandler: DropHandler;
 	private remoteService: RemoteImageService;
 	private conversionService: LocalConversionService;
+	private bannerService: BannerService;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -45,6 +47,9 @@ export default class ImageManagerPlugin extends Plugin {
 	}
 
 	onunload(): void {
+		// Clean up banner service
+		this.bannerService?.destroy();
+		
 		this.log('Image Manager plugin unloaded');
 	}
 
@@ -64,6 +69,7 @@ export default class ImageManagerPlugin extends Plugin {
 		);
 		this.dropHandler = new DropHandler(this.app, this.settings, this.imageProcessor);
 		this.conversionService = new LocalConversionService(this.app, this.settings, this.storageManager, this.imageProcessor);
+		this.bannerService = new BannerService(this.app, this.settings);
 	}
 
 	/**
@@ -95,10 +101,10 @@ export default class ImageManagerPlugin extends Plugin {
 			void this.pasteHandler.handlePropertyPaste(evt);
 		}, { capture: true });
 
-		// File open handler for auto-conversion
-		// Register always, but check settings inside
+		// File open handler for auto-conversion and banner
 		this.registerEvent(
 			this.app.workspace.on('file-open', async (file: TFile | null) => {
+				// Auto-conversion
 				if (this.settings.autoConvertRemoteImages && this.settings.convertOnNoteOpen) {
 					if (file && this.settings.supportedExtensions.includes(file.extension)) {
 						// Small delay to let file fully load
@@ -111,8 +117,42 @@ export default class ImageManagerPlugin extends Plugin {
 						}
 					}
 				}
+
+				// Banner rendering
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (view instanceof MarkdownView) {
+					void this.bannerService.process(file, view);
+				}
 			})
 		);
+
+		// Layout change handler for banner
+		this.registerEvent(
+			this.app.workspace.on('layout-change', () => {
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (view) {
+					// Process if this view hasn't been processed yet
+					void this.bannerService.process(view.file, view);
+				}
+			})
+		);
+
+		// Metadata change handler for banner updates
+		this.registerEvent(
+			this.app.metadataCache.on('changed', (file: TFile) => {
+				this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
+					const view = leaf.view as MarkdownView;
+					if (view instanceof MarkdownView && view.file === file) {
+						void this.bannerService.process(file, view);
+					}
+				});
+			})
+		);
+
+		// Apply banner settings when layout is ready
+		this.app.workspace.onLayoutReady(() => {
+			this.bannerService.applySettings();
+		});
 	}
 
 	/**
@@ -241,6 +281,10 @@ export default class ImageManagerPlugin extends Plugin {
 		this.dropHandler?.updateSettings(this.settings);
 		this.remoteService?.updateSettings(this.settings);
 		this.conversionService?.updateSettings(this.settings);
+		
+		// Update and apply banner settings
+		this.bannerService?.updateSettings(this.settings);
+		this.bannerService?.applySettings();
 	}
 
 	/**
