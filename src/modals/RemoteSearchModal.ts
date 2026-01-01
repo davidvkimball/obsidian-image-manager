@@ -335,10 +335,12 @@ export class RemoteSearchModal extends Modal {
 				}
 
 				// Insert into property (create if it doesn't exist)
+				// Pass RemoteImage so PropertyHandler can generate referral text if needed
 				await this.propertyHandler.insertImageFromUrl(
 					downloadUrl,
 					activeFile,
-					this.options.propertyName
+					this.options.propertyName,
+					image // Pass RemoteImage for referral text generation
 				);
 			} else {
 				// Insert into note body
@@ -349,9 +351,13 @@ export class RemoteSearchModal extends Modal {
 				);
 
 				if (result.success && result.linkText) {
+					// Generate referral text and append it
+					const referralText = this.remoteService.generateReferralText(image);
+					const fullText = result.linkText + referralText;
+
 					const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 					if (view?.editor) {
-						view.editor.replaceSelection(result.linkText);
+						view.editor.replaceSelection(fullText);
 					}
 				}
 			}

@@ -257,6 +257,53 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 						});
 				});
 		});
+
+		group.addSetting((setting) => {
+			setting
+				.setName('Insert size')
+				.setDesc('Set the size of the image when inserting. Format could be only the width "200" or the width and height "200x100". Leave empty for no size.')
+				.addText((text) => {
+					text
+						.setPlaceholder('200 or 200x100')
+						.setValue(this.plugin.settings.insertSize)
+						.onChange(async (value) => {
+							this.plugin.settings.insertSize = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		});
+
+		group.addSetting((setting) => {
+			setting
+				.setName('Insert referral')
+				// False positive: "Insert" is a verb, "referral" is a technical term
+				// eslint-disable-next-line obsidianmd/ui/sentence-case
+				.setDesc('Insert the reference text (e.g., "Photo by [author] on [provider]")')
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.insertReferral)
+						.onChange(async (value) => {
+							this.plugin.settings.insertReferral = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		});
+
+		group.addSetting((setting) => {
+			setting
+				.setName('Insert backlink')
+				// False positive: "backlink" is a technical term
+				// eslint-disable-next-line obsidianmd/ui/sentence-case
+				.setDesc('Insert a backlink (image HTML location on Provider website) in front of the reference text (e.g., "[Backlink](url) | Photo by...")')
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.insertBackLink)
+						.onChange(async (value) => {
+							this.plugin.settings.insertBackLink = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		});
 	}
 
 	private renderPropertySettings(containerEl: HTMLElement): void {
@@ -417,7 +464,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting((setting) => {
 			setting
 				.setName('Descriptive images')
-				.setDesc('Ask for image description, use as display text and kebab-case for filename')
+				.setDesc('Ask for image description, use as display text and kebab-case for filename (applies to note body insertions only, not properties)')
 				.addToggle((toggle) => {
 					toggle
 						.setValue(this.plugin.settings.enableDescriptiveImages)

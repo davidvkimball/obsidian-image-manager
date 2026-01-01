@@ -138,8 +138,9 @@ export class StorageManager {
 	 * Generate markdown image link for a file
 	 * Ensures the link includes '!' for images
 	 * @param displayText Optional display text to add after the link (e.g., ![[image.jpg|display text]])
+	 * @param insertSize Optional size to add (e.g., "200" or "200x100")
 	 */
-	generateMarkdownLink(file: TFile, sourcePath: string, displayText?: string): string {
+	generateMarkdownLink(file: TFile, sourcePath: string, displayText?: string, insertSize?: string): string {
 		const link = this.app.fileManager.generateMarkdownLink(file, sourcePath);
 		// Obsidian's generateMarkdownLink should include '!' for images, but ensure it does
 		let imageLink = link;
@@ -148,15 +149,61 @@ export class StorageManager {
 			imageLink = `!${link}`;
 		}
 		
-		// Add display text if provided (for wikilinks: ![[path|text]], for markdown: ![text](path))
-		if (displayText && displayText.trim()) {
-			if (imageLink.startsWith('![') && imageLink.includes('](')) {
-				// Markdown link: ![alt](path) -> ![displayText](path)
+		// Debug logging
+		if (this.settings.debugMode) {
+			console.log('[Image Manager] generateMarkdownLink', {
+				originalLink: link,
+				imageLink,
+				insertSize,
+				displayText,
+				hasSize: !!(insertSize && insertSize.trim())
+			});
+		}
+		
+		// Handle size and display text
+		// For wikilinks: ![[path]] -> ![[path|size]] or ![[path|size|displayText]]
+		// For markdown: ![alt](path) -> ![alt|size](path) or ![displayText|size](path)
+		if (imageLink.startsWith('![') && imageLink.includes('](')) {
+			// Markdown link: ![alt](path)
+			if (insertSize && insertSize.trim()) {
+				// Add size: ![alt|size](path)
+				const sizePart = `|${insertSize}`;
+				if (displayText && displayText.trim()) {
+					// Both size and display text: ![displayText|size](path)
+					imageLink = imageLink.replace(/^!\[([^\]]*)\]/, `![${displayText}${sizePart}]`);
+				} else {
+					// Just size: ![alt|size](path)
+					// Handle empty alt text case: ![] -> ![|size]
+					const altMatch = imageLink.match(/^!\[([^\]]*)\]/);
+					if (altMatch) {
+						const alt = altMatch[1] || '';
+						imageLink = imageLink.replace(/^!\[([^\]]*)\]/, `![${alt}${sizePart}]`);
+					}
+				}
+			} else if (displayText && displayText.trim()) {
+				// Just display text: ![displayText](path)
 				imageLink = imageLink.replace(/^!\[([^\]]*)\]/, `![${displayText}]`);
-			} else if (imageLink.startsWith('![') && imageLink.includes(']]')) {
-				// Wikilink: ![[path]] -> ![[path|displayText]]
-				imageLink = imageLink.replace(/\]\]$/, `|${displayText}]]`);
 			}
+		} else if (imageLink.startsWith('![') && imageLink.includes(']]')) {
+			// Wikilink: ![[path]]
+			const parts: string[] = [];
+			if (insertSize && insertSize.trim()) {
+				parts.push(insertSize);
+			}
+			if (displayText && displayText.trim()) {
+				parts.push(displayText);
+			}
+			if (parts.length > 0) {
+				// Add size and/or display text: ![[path|size]] or ![[path|size|displayText]]
+				imageLink = imageLink.replace(/\]\]$/, `|${parts.join('|')}]]`);
+			}
+		}
+		
+		// Debug logging
+		if (this.settings.debugMode) {
+			console.log('[Image Manager] generateMarkdownLink result', {
+				finalLink: imageLink
+			});
 		}
 		
 		return imageLink;

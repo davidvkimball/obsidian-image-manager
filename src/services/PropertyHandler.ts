@@ -4,22 +4,25 @@
  */
 
 import { App, TFile, Notice } from 'obsidian';
-import { ImageManagerSettings, PropertyLinkFormat } from '../types';
+import { ImageManagerSettings, PropertyLinkFormat, RemoteImage } from '../types';
 import { isMdxFile, processMdxFrontMatter } from '../utils/mdx-frontmatter';
 import { StorageManager } from './StorageManager';
 import { ImageProcessor } from './ImageProcessor';
+import type { RemoteImageService } from './RemoteImageService';
 
 export class PropertyHandler {
 	private app: App;
 	private settings: ImageManagerSettings;
 	private storageManager: StorageManager;
 	private imageProcessor: ImageProcessor;
+	private remoteService?: RemoteImageService;
 
-	constructor(app: App, settings: ImageManagerSettings, storageManager: StorageManager, imageProcessor: ImageProcessor) {
+	constructor(app: App, settings: ImageManagerSettings, storageManager: StorageManager, imageProcessor: ImageProcessor, remoteService?: RemoteImageService) {
 		this.app = app;
 		this.settings = settings;
 		this.storageManager = storageManager;
 		this.imageProcessor = imageProcessor;
+		this.remoteService = remoteService;
 	}
 
 	/**
@@ -162,18 +165,22 @@ export class PropertyHandler {
 	/**
 	 * Insert an image from a URL into a property
 	 * Downloads the image, saves it locally, and sets the property
+	 * @param remoteImage Optional RemoteImage object for generating referral text
 	 */
 	async insertImageFromUrl(
 		imageUrl: string,
 		noteFile: TFile,
-		propertyName: string
+		propertyName: string,
+		remoteImage?: RemoteImage
 	): Promise<void> {
 		// Use ImageProcessor to handle the download and save
 		// This ensures consistent naming, deduplication, and rename modal handling
+		// Skip descriptive images for property insertions (display text doesn't apply to properties)
 		const result = await this.imageProcessor.processImageUrl(
 			imageUrl,
 			noteFile,
-			true // Show rename modal if enabled
+			true, // Show rename modal if enabled
+			true // isPropertyInsertion - skip descriptive images
 		);
 
 		if (!result.success || !result.file) {
@@ -182,5 +189,15 @@ export class PropertyHandler {
 
 		// Set the property
 		await this.setPropertyValue(noteFile, propertyName, result.file);
+
+		// Append referral text at end of file if enabled and we have RemoteImage info
+		if (this.settings.appendReferral && remoteImage && this.remoteService) {
+			const referralText = this.remoteService.generateReferralText(remoteImage);
+			if (referralText) {
+				const content = await this.app.vault.read(noteFile);
+				const updatedContent = content + referralText;
+				await this.app.vault.modify(noteFile, updatedContent);
+			}
+		}
 	}
 }

@@ -245,3 +245,19 @@
 .image-manager-confirm-buttons button {
 	min-width: 100px;
 }
+
+/* Group settings compatibility styling for older Obsidian builds (< 1.11.0) */
+/* Base styling for setting-group-heading */
+.setting-group-heading h3 {
+    margin: 1.5rem 0 0.75rem;
+    padding-bottom: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Only show border-bottom if heading is NOT immediately followed by a setting-item */
+/* This prevents double divider lines in older Obsidian builds where the first .setting-item */
+/* already has a border-top, creating a double line with the heading's border-bottom */
+.setting-group-heading:not(:has(+ .setting-item)) h3 {
+    border-bottom: 1px solid var(--background-modifier-border);
+}

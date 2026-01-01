@@ -85,10 +85,12 @@ export class FilePickerModal extends Modal {
 					}
 
 					// Insert into property (create if it doesn't exist)
+					// Skip descriptive images for property insertions (display text doesn't apply to properties)
 					const result = await this.imageProcessor.processImageFile(
 						file,
 						activeFile,
-						true // Show rename modal
+						true, // Show rename modal
+						true // isPropertyInsertion - skip descriptive images
 					);
 
 					if (result.success && result.file) {

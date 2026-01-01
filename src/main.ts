@@ -55,7 +55,7 @@ export default class ImageManagerPlugin extends Plugin {
 		this.storageManager = new StorageManager(this.app, this.settings);
 		this.remoteService = new RemoteImageService(this.settings);
 		this.imageProcessor = new ImageProcessor(this.app, this.settings, this.storageManager);
-		this.propertyHandler = new PropertyHandler(this.app, this.settings, this.storageManager, this.imageProcessor);
+		this.propertyHandler = new PropertyHandler(this.app, this.settings, this.storageManager, this.imageProcessor, this.remoteService);
 		this.pasteHandler = new PasteHandler(
 			this.app,
 			this.settings,

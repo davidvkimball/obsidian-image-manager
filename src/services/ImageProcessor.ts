@@ -32,11 +32,13 @@ export class ImageProcessor {
 	/**
 	 * Process a pasted/dropped image file
 	 * This is called from our event handlers (user-initiated action)
+	 * @param isPropertyInsertion - If true, skip descriptive images (only applies to note body)
 	 */
 	async processImageFile(
 		file: File,
 		activeFile: TFile,
-		showRenameModal: boolean = true
+		showRenameModal: boolean = true,
+		isPropertyInsertion: boolean = false
 	): Promise<ProcessedImage> {
 		try {
 			// Read file data
@@ -107,7 +109,12 @@ export class ImageProcessor {
 					throw new Error('Renamed file not found');
 				}
 				const renamedFile = abstractFile;
-				const linkText = this.storageManager.generateMarkdownLink(renamedFile, activeFile.path, displayText);
+				const linkText = this.storageManager.generateMarkdownLink(
+					renamedFile,
+					activeFile.path,
+					displayText,
+					this.settings.insertSize
+				);
 
 				if (!this.settings.disableRenameNotice) {
 					new Notice(`Image saved as: ${renamedFile.name}`);
@@ -123,7 +130,12 @@ export class ImageProcessor {
 				// Auto-rename without modal
 				const finalPath = await this.getDeduplicatedPath(finalName, extension, activeFile);
 				const savedFile = await this.storageManager.saveFile(arrayBuffer, finalPath);
-				const linkText = this.storageManager.generateMarkdownLink(savedFile, activeFile.path);
+				const linkText = this.storageManager.generateMarkdownLink(
+					savedFile,
+					activeFile.path,
+					undefined,
+					this.settings.insertSize
+				);
 
 				if (!this.settings.disableRenameNotice) {
 					new Notice(`Image saved as: ${savedFile.name}`);
@@ -150,11 +162,13 @@ export class ImageProcessor {
 
 	/**
 	 * Process an image from a URL (download and save locally)
+	 * @param isPropertyInsertion - If true, skip descriptive images (only applies to note body)
 	 */
 	async processImageUrl(
 		url: string,
 		activeFile: TFile,
-		showRenameModal: boolean = true
+		showRenameModal: boolean = true,
+		isPropertyInsertion: boolean = false
 	): Promise<ProcessedImage> {
 		try {
 			// Download the image
@@ -185,8 +199,8 @@ export class ImageProcessor {
 				let finalName: string;
 				let displayText: string | undefined;
 
-				// Show descriptive image modal if enabled, otherwise show rename modal
-				if (this.settings.enableDescriptiveImages) {
+				// Show descriptive image modal if enabled and NOT inserting to property, otherwise show rename modal
+				if (this.settings.enableDescriptiveImages && !isPropertyInsertion) {
 					const descResult = await openDescriptiveImageModal(this.app, tempFile);
 					
 					if (descResult.cancelled) {
@@ -228,7 +242,12 @@ export class ImageProcessor {
 					throw new Error('Renamed file not found');
 				}
 				const renamedFile = abstractFile;
-				const linkText = this.storageManager.generateMarkdownLink(renamedFile, activeFile.path, displayText);
+				const linkText = this.storageManager.generateMarkdownLink(
+					renamedFile,
+					activeFile.path,
+					displayText,
+					this.settings.insertSize
+				);
 
 				if (!this.settings.disableRenameNotice) {
 					new Notice(`Image downloaded and saved as: ${renamedFile.name}`);
@@ -243,7 +262,12 @@ export class ImageProcessor {
 			} else {
 				const finalPath = await this.getDeduplicatedPath(finalName, extension, activeFile);
 				const savedFile = await this.storageManager.saveFile(arrayBuffer, finalPath);
-				const linkText = this.storageManager.generateMarkdownLink(savedFile, activeFile.path);
+				const linkText = this.storageManager.generateMarkdownLink(
+					savedFile,
+					activeFile.path,
+					undefined,
+					this.settings.insertSize
+				);
 
 				if (!this.settings.disableRenameNotice) {
 					new Notice(`Image downloaded and saved as: ${savedFile.name}`);
@@ -343,7 +367,7 @@ export class ImageProcessor {
 			const extension = imageFile.extension;
 			let finalName = suggestedName;
 
-			// Handle descriptive images if enabled
+			// Handle descriptive images if enabled (note: this is for renaming existing files, not property insertion)
 			let displayText = '';
 			if (this.settings.enableDescriptiveImages) {
 				const descResult = await openDescriptiveImageModal(this.app, imageFile);
@@ -376,7 +400,12 @@ export class ImageProcessor {
 				throw new Error('Renamed file not found');
 			}
 			const renamedFile = abstractFile;
-			const linkText = this.storageManager.generateMarkdownLink(renamedFile, activeFile.path, displayText);
+			const linkText = this.storageManager.generateMarkdownLink(
+				renamedFile,
+				activeFile.path,
+				displayText,
+				this.settings.insertSize
+			);
 
 			return {
 				file: renamedFile,

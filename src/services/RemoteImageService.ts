@@ -189,6 +189,42 @@ export class RemoteImageService {
 	}
 
 	/**
+	 * Generate referral text for an image (attribution)
+	 * Based on Image Inserter's referral format
+	 */
+	generateReferralText(image: RemoteImage): string {
+		if (!this.settings.insertReferral) {
+			return '';
+		}
+
+		const backlink = this.settings.insertBackLink && image.pageUrl
+			? `[Backlink](${image.pageUrl}) | `
+			: '';
+
+		let referral = '';
+		switch (image.provider) {
+			case ImageProvider.Unsplash:
+				if (image.author && image.authorUrl) {
+					const utm = 'utm_source=Obsidian%20Image%20Manager&utm_medium=referral';
+					referral = `\n*${backlink}Photo by [${image.author}](${image.authorUrl}) on [Unsplash](https://unsplash.com/?${utm})*\n`;
+				}
+				break;
+			case ImageProvider.Pexels:
+				if (image.author && image.authorUrl) {
+					referral = `\n*${backlink}Photo by [${image.author}](${image.authorUrl}) on [Pexels](https://www.pexels.com/)*\n`;
+				}
+				break;
+			case ImageProvider.Pixabay:
+				if (image.author && image.authorUrl) {
+					referral = `\n*${backlink}Image by [${image.author}](${image.authorUrl}) on [Pixabay](https://pixabay.com/)*\n`;
+				}
+				break;
+		}
+
+		return referral;
+	}
+
+	/**
 	 * Map orientation setting to API parameter
 	 */
 	private mapOrientation(orientation: ImageOrientation): string | null {

@@ -89,7 +89,13 @@ export interface ImageManagerSettings {
 	dupNumberDelimiter: string;
 	dupNumberAtStart: boolean;
 	disableRenameNotice: boolean;
-	enableDescriptiveImages: boolean; // Ask for description, use as display text
+	enableDescriptiveImages: boolean; // Ask for description, use as display text (note body only)
+	
+	// Image Insertion Options (from Image Inserter)
+	insertSize: string; // Image size in markdown (e.g., "200" or "200x100")
+	insertReferral: boolean; // Insert attribution text (e.g., "Photo by [author] on [provider]")
+	insertBackLink: boolean; // Insert backlink before attribution (e.g., "[Backlink](url) | Photo by...")
+	appendReferral: boolean; // Append referral at end of file when inserting to frontmatter
 	
 	// Advanced
 	supportedExtensions: string[];
@@ -132,6 +138,12 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	dupNumberAtStart: false,
 	disableRenameNotice: false,
 	enableDescriptiveImages: false,
+	
+	// Image Insertion Options (from Image Inserter)
+	insertSize: '', // Empty = no size specified
+	insertReferral: true, // Default to true (attribution)
+	insertBackLink: false, // Default to false
+	appendReferral: false, // Default to false
 	
 	// Advanced
 	supportedExtensions: ['md', 'mdx'],

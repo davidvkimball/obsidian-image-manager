@@ -171,10 +171,12 @@ export class PasteHandler {
 		}
 
 		// Process the image - show rename modal for property paste
+		// Skip descriptive images for property insertions (display text doesn't apply to properties)
 		const result = await this.imageProcessor.processImageFile(
 			imageFile,
 			activeFile,
-			true // Show rename modal for property paste
+			true, // Show rename modal for property paste
+			true // isPropertyInsertion - skip descriptive images
 		);
 
 		if (result.success && result.file) {
