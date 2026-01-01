@@ -90,6 +90,7 @@ This plugin unifies functionality from 5 existing plugins:
 - **False Positive Prevention**: The rename dialog only triggers from our own event handlers (paste, drop, file picker, remote search). We do NOT listen to vault `create` events for prompting, which prevents false positives when images are added via git sync or other external means.
 - **MDX Files**: Obsidian's `metadataCache` and `processFrontMatter` don't work with MDX files. Use `parseMdxFrontmatter()` and `processMdxFrontMatter()` utilities instead.
 - **Settings Groups**: Use `createSettingsGroup()` from `settings-compat.ts` to support both Obsidian 1.11.0+ (with native `SettingGroup`) and older versions (with manual heading fallback).
+- **Settings heading border**: We override `.setting-group-heading h3` in `styles.css` to drop the default border and only reintroduce it when the heading is not immediately followed by a `.setting-item`, preventing the double-line issue that older Obsidian builds show around these headings.
 
 ---
 

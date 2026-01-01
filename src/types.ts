@@ -98,6 +98,7 @@ export interface BannerDeviceSettings {
 	iconRadius: number;
 	iconBackground: boolean;
 	iconBorder: number;
+	iconFrame: boolean;
 	iconAlignmentH: 'flex-start' | 'center' | 'flex-end';
 	iconAlignmentV: 'flex-start' | 'center' | 'flex-end';
 	iconOffsetX: number;
@@ -165,6 +166,7 @@ export const DEFAULT_BANNER_DEVICE_SETTINGS: Record<DeviceType, BannerDeviceSett
 		iconRadius: 8,
 		iconBackground: true,
 		iconBorder: 2,
+		iconFrame: true,
 		iconAlignmentH: 'flex-start',
 		iconAlignmentV: 'flex-end',
 		iconOffsetX: 0,
@@ -183,6 +185,7 @@ export const DEFAULT_BANNER_DEVICE_SETTINGS: Record<DeviceType, BannerDeviceSett
 		iconRadius: 8,
 		iconBackground: true,
 		iconBorder: 2,
+		iconFrame: true,
 		iconAlignmentH: 'flex-start',
 		iconAlignmentV: 'flex-end',
 		iconOffsetX: 0,
@@ -201,6 +204,7 @@ export const DEFAULT_BANNER_DEVICE_SETTINGS: Record<DeviceType, BannerDeviceSett
 		iconRadius: 8,
 		iconBackground: true,
 		iconBorder: 2,
+		iconFrame: true,
 		iconAlignmentH: 'flex-start',
 		iconAlignmentV: 'flex-end',
 		iconOffsetX: 0,

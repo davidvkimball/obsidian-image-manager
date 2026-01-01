@@ -435,6 +435,7 @@ export class BannerService {
 		};
 
 		if (deviceSettings.iconEnabled) {
+			const iconFrame = deviceSettings.iconFrame ?? true;
 			cssVars['--im-banner-icon-size-w'] = `${deviceSettings.iconSize}px`;
 			cssVars['--im-banner-icon-size-h'] = `${deviceSettings.iconSize}px`;
 			cssVars['--im-banner-icon-radius'] = `${deviceSettings.iconRadius}px`;
@@ -442,8 +443,8 @@ export class BannerService {
 			cssVars['--im-banner-icon-align-v'] = deviceSettings.iconAlignmentV;
 			cssVars['--im-banner-icon-offset-x'] = `${deviceSettings.iconOffsetX}px`;
 			cssVars['--im-banner-icon-offset-y'] = `${deviceSettings.iconOffsetY}px`;
-			cssVars['--im-banner-icon-border'] = `${deviceSettings.iconBorder}px`;
-			cssVars['--im-banner-icon-background'] = deviceSettings.iconBackground ? 'revert-layer' : 'transparent';
+			cssVars['--im-banner-icon-border'] = iconFrame ? `${deviceSettings.iconBorder}px` : '0px';
+			cssVars['--im-banner-icon-background'] = iconFrame && deviceSettings.iconBackground ? 'revert-layer' : 'transparent';
 		}
 
 		setCssProperties(document.body, cssVars);

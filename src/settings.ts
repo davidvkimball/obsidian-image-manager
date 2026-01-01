@@ -775,6 +775,20 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 
 			group.addSetting((setting) => {
 				setting
+					.setName('Icon frame')
+					.setDesc('Show the border/background frame around the icon (disable to display just the icon graphic)')
+					.addToggle((toggle) => {
+						toggle
+							.setValue(deviceSettings.iconFrame)
+							.onChange(async (value) => {
+								this.plugin.settings.banner[currentDevice].iconFrame = value;
+								await this.plugin.saveSettings();
+							});
+					});
+			});
+
+			group.addSetting((setting) => {
+				setting
 					.setName('Icon border size')
 					.setDesc('Size of the icon border (in pixels)')
 					.addText((text) => {
