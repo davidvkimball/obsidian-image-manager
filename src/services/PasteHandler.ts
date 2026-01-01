@@ -46,6 +46,12 @@ export class PasteHandler {
 			return false; // Let Obsidian handle it
 		}
 
+		// Check if we're in a frontmatter property field - if so, let property paste handler take over
+		const activeEl = document.activeElement as HTMLElement;
+		if (activeEl && this.isFrontmatterField(activeEl)) {
+			return false; // Let property paste handler handle it
+		}
+
 		const files = evt.clipboardData?.files;
 		if (!files || files.length === 0) {
 			return false; // No files, let Obsidian handle it
@@ -112,6 +118,15 @@ export class PasteHandler {
 			return false;
 		}
 
+		// Debug: Log that we detected a property field
+		if (this.settings.debugMode) {
+			console.log('[Image Manager] Property paste detected', {
+				activeElement: activeEl.tagName,
+				classes: activeEl.className,
+				propertyName: this.getPropertyName(activeEl)
+			});
+		}
+
 		const files = evt.clipboardData?.files;
 		if (!files || files.length === 0) {
 			return false;
@@ -150,21 +165,17 @@ export class PasteHandler {
 			return true;
 		}
 
-		// Blur the input field to prevent Obsidian's autocomplete from interfering
-		if (activeEl instanceof HTMLInputElement || activeEl instanceof HTMLTextAreaElement) {
-			activeEl.blur();
-			activeEl.value = '';
-		}
-
-		// Process the image - skip rename modal for property paste to avoid conflicts
-		// We'll use auto-rename with a simple template
+		// Process the image - show rename modal for property paste
 		const result = await this.imageProcessor.processImageFile(
 			imageFile,
 			activeFile,
-			false // Don't show rename modal for property paste
+			true // Show rename modal for property paste
 		);
 
 		if (result.success && result.file) {
+			// Get the formatted link value
+			const linkValue = this.propertyHandler.formatPropertyLink(result.file, activeFile);
+			
 			// Update the frontmatter property directly
 			await this.propertyHandler.setPropertyValue(
 				activeFile,
@@ -172,23 +183,83 @@ export class PasteHandler {
 				result.file
 			);
 			
-			// Get the formatted link value to update the UI
-			const linkValue = this.propertyHandler.formatPropertyLink(result.file, activeFile);
+			// Wait for Obsidian to process the file change and update metadata cache
+			await new Promise(resolve => setTimeout(resolve, 300));
 			
-			// Update the input field directly to show the value immediately
-			if (activeEl instanceof HTMLInputElement || activeEl instanceof HTMLTextAreaElement) {
-				activeEl.value = linkValue;
-				// Trigger input event to notify Obsidian's property editor
-				activeEl.dispatchEvent(new Event('input', { bubbles: true }));
+			// Try multiple approaches to update the UI
+			// Approach 1: Find and update the input field directly
+			const propertyEl = document.querySelector(
+				`.metadata-property[data-property-key="${propertyName}"]`
+			);
+			
+			if (this.settings.debugMode) {
+				console.log('[Image Manager] Updating property UI', {
+					propertyName,
+					linkValue,
+					propertyElFound: !!propertyEl
+				});
 			}
 			
-			// Wait a bit for UI to update and Obsidian to process the change
-			await new Promise(resolve => setTimeout(resolve, 200));
+			const inputEl = propertyEl?.querySelector(
+				'.metadata-input-longtext, .metadata-input-text, input.metadata-input, textarea.metadata-input'
+			) as HTMLElement | HTMLInputElement | HTMLTextAreaElement | null;
 			
-			// Force focus away from the property editor to prevent autocomplete
-			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-			if (view?.editor) {
-				view.editor.focus();
+			if (inputEl) {
+				if (this.settings.debugMode) {
+					const currentValue = inputEl instanceof HTMLInputElement || inputEl instanceof HTMLTextAreaElement
+						? inputEl.value
+						: inputEl.textContent || inputEl.innerText;
+					console.log('[Image Manager] Found input field, updating value', {
+						elementType: inputEl.tagName,
+						currentValue,
+						newValue: linkValue
+					});
+				}
+				
+				// Handle both input/textarea elements and contenteditable divs
+				if (inputEl instanceof HTMLInputElement || inputEl instanceof HTMLTextAreaElement) {
+					// Standard input/textarea
+					inputEl.value = linkValue;
+				} else {
+					// Contenteditable div (used for longtext properties)
+					inputEl.textContent = linkValue;
+					inputEl.innerText = linkValue;
+				}
+				
+				// Trigger multiple events to ensure Obsidian recognizes the change
+				const inputEvent = new Event('input', { bubbles: true, cancelable: true });
+				const changeEvent = new Event('change', { bubbles: true, cancelable: true });
+				const blurEvent = new Event('blur', { bubbles: true, cancelable: true });
+				
+				inputEl.dispatchEvent(inputEvent);
+				
+				// Small delay before change event
+				setTimeout(() => {
+					inputEl.dispatchEvent(changeEvent);
+					
+					// Focus and blur to trigger Obsidian's update mechanism
+					if (inputEl instanceof HTMLElement) {
+						inputEl.focus();
+						setTimeout(() => {
+							inputEl.blur();
+							inputEl.dispatchEvent(blurEvent);
+							
+							// Focus the editor to complete the action
+							setTimeout(() => {
+								const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+								if (view?.editor) {
+									view.editor.focus();
+								}
+							}, 50);
+						}, 50);
+					}
+				}, 50);
+			} else {
+				// If we can't find the input, just focus the editor
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (view?.editor) {
+					view.editor.focus();
+				}
 			}
 		}
 
@@ -197,10 +268,29 @@ export class PasteHandler {
 
 	/**
 	 * Check if an element is a supported frontmatter field
+	 * Works for both MD and MDX files
 	 */
 	private isFrontmatterField(element: HTMLElement): boolean {
-		// Check for text property fields (the only type that supports images)
-		return element.matches('.metadata-input-longtext');
+		// Check if element is inside a metadata property container
+		const propertyEl = element.closest('.metadata-property');
+		if (!propertyEl) {
+			return false;
+		}
+
+		// Check for various property input types that can accept text/images
+		// Obsidian uses different classes for different property types
+		// Longtext properties use contenteditable divs, not input/textarea
+		return (
+			element.matches('.metadata-input-longtext') ||
+			element.matches('.metadata-input-text') ||
+			element.matches('input.metadata-input') ||
+			element.matches('textarea.metadata-input') ||
+			// Also check if the element itself is an input/textarea/div inside a property
+			((element instanceof HTMLInputElement || 
+			  element instanceof HTMLTextAreaElement ||
+			  (element instanceof HTMLDivElement && element.classList.contains('metadata-input-longtext'))) &&
+				propertyEl !== null)
+		);
 	}
 
 	/**
