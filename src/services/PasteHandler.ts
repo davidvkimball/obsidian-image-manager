@@ -146,22 +146,27 @@ export class PasteHandler {
 			return false;
 		}
 
+		// Double-check we're still in a property field (element might have changed)
+		// and that we have an active file before preventing default
+		const currentEl = document.activeElement as HTMLElement;
+		if (!currentEl || !this.isFrontmatterField(currentEl)) {
+			return false;
+		}
+
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			return false;
+		}
+
 		// We're handling this - stop all propagation
 		evt.preventDefault();
 		evt.stopPropagation();
 		evt.stopImmediatePropagation();
 
 		// Get the property name before processing
-		const propertyName = this.getPropertyName(activeEl);
+		const propertyName = this.getPropertyName(currentEl);
 		if (!propertyName) {
 			new Notice('Could not determine property name');
-			return true;
-		}
-
-		// Get active file
-		const activeFile = this.app.workspace.getActiveFile();
-		if (!activeFile) {
-			new Notice('No active file');
 			return true;
 		}
 

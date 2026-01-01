@@ -327,8 +327,14 @@ export class RemoteSearchModal extends Modal {
 			// Get download URL based on size
 			const downloadUrl = this.remoteService.getDownloadUrl(image, this.settings.defaultImageSize);
 
-			if (this.options.insertToProperty && this.options.propertyName) {
-				// Insert into property
+			if (this.options.insertToProperty) {
+				// Validate property name
+				if (!this.options.propertyName || this.options.propertyName.trim() === '') {
+					new Notice('Please specify a property name in settings');
+					return;
+				}
+
+				// Insert into property (create if it doesn't exist)
 				await this.propertyHandler.insertImageFromUrl(
 					downloadUrl,
 					activeFile,

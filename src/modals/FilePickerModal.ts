@@ -77,8 +77,14 @@ export class FilePickerModal extends Modal {
 					continue;
 				}
 
-				if (this.insertToProperty && this.propertyName) {
-					// Insert into property
+				if (this.insertToProperty) {
+					// Validate property name
+					if (!this.propertyName || this.propertyName.trim() === '') {
+						new Notice('Please specify a property name in settings');
+						return;
+					}
+
+					// Insert into property (create if it doesn't exist)
 					const result = await this.imageProcessor.processImageFile(
 						file,
 						activeFile,

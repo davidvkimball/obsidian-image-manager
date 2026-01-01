@@ -117,9 +117,9 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	
 	// Property Insertion
 	enablePropertyPaste: true,
-	propertyLinkFormat: PropertyLinkFormat.Wikilink,
+	propertyLinkFormat: PropertyLinkFormat.Path,
 	customPropertyLinkFormat: '{image-url}',
-	defaultPropertyName: 'cover',
+	defaultPropertyName: '',
 	
 	// Conversion
 	autoConvertRemoteImages: false,
@@ -134,7 +134,7 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	enableDescriptiveImages: false,
 	
 	// Advanced
-	supportedExtensions: ['md'],
+	supportedExtensions: ['md', 'mdx'],
 	debugMode: false,
 };
 

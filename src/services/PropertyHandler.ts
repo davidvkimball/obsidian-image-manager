@@ -93,6 +93,10 @@ export class PropertyHandler {
 				// This works whether same folder or different folder
 				pathToUse = `./${imageFile.name}`;
 				break;
+			case PropertyLinkFormat.Custom:
+				// For custom format, use just the filename so user can control the full path
+				pathToUse = imageFile.name;
+				break;
 			case PropertyLinkFormat.Path:
 			default:
 				pathToUse = this.getRelativePath(noteFile, imageFile);
@@ -105,7 +109,7 @@ export class PropertyHandler {
 			case PropertyLinkFormat.Markdown:
 				return `![](${encodeURI(pathToUse)})`;
 			case PropertyLinkFormat.Custom:
-				// Replace {image-url} placeholder with the image path
+				// Replace {image-url} placeholder with the image filename
 				return this.settings.customPropertyLinkFormat.replace(
 					/\{image-url\}/gi,
 					pathToUse

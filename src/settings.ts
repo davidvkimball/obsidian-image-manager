@@ -103,7 +103,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.setDesc('Where to save inserted images')
 				.addDropdown((dropdown) => {
 					dropdown
-						.addOption(AttachmentLocation.ObsidianDefault, "Obsidian's default")
+						.addOption(AttachmentLocation.ObsidianDefault, "Use Obsidian's settings")
 						.addOption(AttachmentLocation.SameFolder, 'Same folder as note')
 						.addOption(AttachmentLocation.Subfolder, 'Subfolder (configure below)')
 						.addOption(AttachmentLocation.VaultFolder, 'Vault folder (configure below)')

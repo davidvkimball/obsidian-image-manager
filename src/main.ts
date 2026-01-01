@@ -85,7 +85,13 @@ export default class ImageManagerPlugin extends Plugin {
 		);
 
 		// DOM paste handler for frontmatter properties
+		// Use capture phase but be defensive - only handle if we're definitely in a property field
 		this.registerDomEvent(document, 'paste', (evt: ClipboardEvent) => {
+			// Only handle if we're in the Obsidian workspace (not system UI like title bar)
+			const target = evt.target as HTMLElement;
+			if (!target || !target.closest('.workspace')) {
+				return; // Not in workspace, don't interfere
+			}
 			void this.pasteHandler.handlePropertyPaste(evt);
 		}, { capture: true });
 
