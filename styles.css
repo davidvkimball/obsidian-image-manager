@@ -308,7 +308,7 @@ div.image-manager-banner > video {
 	height: 100%;
 	object-fit: cover;
 	z-index: 2;
-	animation: im-banner-fade-in 0.7s linear forwards, im-banner-anim 0.8s ease-out;
+	animation: im-banner-fade-in 1s cubic-bezier(0.4, 0, 0.2, 1) forwards, im-banner-video-anim 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 	object-position: calc(50% + var(--im-banner-img-x)) calc(50% + var(--im-banner-img-y));
 	border-radius: var(--im-banner-radius);
 	transition: object-position 0.5s ease-in-out;
@@ -330,9 +330,9 @@ div.image-manager-banner::before {
 	background-size: var(--im-banner-size);
 	background-position-x: calc(50% + var(--im-banner-img-x));
 	background-position-y: calc(50% + var(--im-banner-img-y));
-	animation: im-banner-fade-in 0.7s linear forwards, im-banner-anim 0.8s ease-out;
-	transition: background-position-x 0.5s ease-in-out, background-position-y 0.5s ease-in-out;
-	will-change: transform, background-position-x, background-position-y;
+	animation: im-banner-fade-in 1s cubic-bezier(0.4, 0, 0.2, 1) forwards, im-banner-anim 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+	transition: background-position-x 0.5s ease-in-out;
+	will-change: background-position-x, background-position-y;
 	transform-style: preserve-3d;
 	backface-visibility: hidden;
 	transform: translate3d(0, 0, 0);
@@ -357,7 +357,20 @@ div.image-manager-banner.static::after {
 }
 
 div.image-manager-banner.static::before {
-	animation: none;
+	animation: none !important;
+	opacity: 1 !important;
+	transition: background-position-x 0.5s ease-in-out, background-position-y 0.5s ease-in-out;
+}
+
+/* Static video */
+div.image-manager-banner.static > video {
+	animation: none !important;
+	opacity: 1 !important;
+}
+
+/* During animation, disable transition to prevent conflicts */
+div.image-manager-banner:not(.static)::before {
+	transition: background-position-x 0.5s ease-in-out;
 }
 
 /* Content after banner */
@@ -378,10 +391,19 @@ div.image-manager-banner + div {
 
 @keyframes im-banner-anim {
 	from {
-		transform: translate3d(0, -10px, 0);
+		background-position-y: calc(50% + (var(--im-banner-img-y, 0px) - 10px));
 	}
 	to {
-		transform: translate3d(0, 0, 0);
+		background-position-y: calc(50% + var(--im-banner-img-y, 0px));
+	}
+}
+
+@keyframes im-banner-video-anim {
+	from {
+		object-position: calc(50% + var(--im-banner-img-x, 0px)) calc(50% + (var(--im-banner-img-y, 0px) - 10px));
+	}
+	to {
+		object-position: calc(50% + var(--im-banner-img-x, 0px)) calc(50% + var(--im-banner-img-y, 0px));
 	}
 }
 

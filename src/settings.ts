@@ -689,6 +689,21 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				});
 		});
 
+		// Animation
+		group.addSetting((setting) => {
+			setting
+				.setName('Animation')
+				.setDesc('Enable banner animation when opening files')
+				.addToggle((toggle) => {
+					toggle
+						.setValue(deviceSettings.animation)
+						.onChange(async (value) => {
+							this.plugin.settings.banner[currentDevice].animation = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		});
+
 		// Frontmatter property settings (global, not device-specific)
 		group.addSetting((setting) => {
 			setting

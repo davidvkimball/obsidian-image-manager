@@ -39,7 +39,7 @@ import {
 	BannerIconType,
 	DeviceType,
 } from '../types';
-import { getFrontmatter } from '../utils/mdx-frontmatter';
+import { getFrontmatter, isMarkdownFile, isMdxFile } from '../utils/mdx-frontmatter';
 
 // CSS class names
 const CSS_CLASSES = {
@@ -148,6 +148,18 @@ export class BannerService {
 			return null;
 		}
 
+		// Early exit: check if banner is enabled
+		const deviceSettings = this.getDeviceSettings();
+		if (!deviceSettings.enabled) {
+			return null;
+		}
+
+		// Early exit: check if file extension is supported
+		// Also allow 'md' as a fallback in case user didn't include it in supportedExtensions
+		if (!this.settings.supportedExtensions.includes(file.extension) && file.extension !== 'md') {
+			return null;
+		}
+
 		// Get leaf ID for data store
 		// @ts-expect-error - leaf.id exists but is not in type definitions
 		const leafId = view?.leaf?.id as string | undefined;
@@ -157,6 +169,35 @@ export class BannerService {
 
 		const oldData = bannerDataStore.get(leafId) || this.createDefaultBannerData();
 		const newData = this.createDefaultBannerData(view, oldData.viewMode);
+
+		// For MD files (which have metadata cache), check cache first to see if banner property exists
+		// This avoids reading the full file if there's no banner property
+		// BUT: Only use this as an optimization if cache is already populated
+		// If cache is null (not ready yet), we must read frontmatter to be sure
+		// Note: Only MD files have metadata cache in Obsidian; other extensions (MDX, etc.) don't
+		if (file.extension === 'md') {
+			const cache = this.app.metadataCache.getFileCache(file);
+			// Only skip if cache exists AND has been populated (frontmatter is not null/undefined)
+			// If cache is null or frontmatter is missing, we need to read the file to be sure
+			if (cache?.frontmatter != null) {
+				const propertySettings = this.settings.banner.properties;
+				const imageProp = propertySettings.imageProperty;
+				const iconProp = propertySettings.iconProperty;
+				
+				// Check if banner or icon property exists in cache
+				const hasBannerProperty = cache.frontmatter[imageProp] != null;
+				const hasIconProperty = deviceSettings.iconEnabled && cache.frontmatter[iconProp] != null;
+				
+				// If cache is populated and no banner/icon property exists, return early
+				// This is safe because the cache is definitive for MD files
+				if (!hasBannerProperty && !hasIconProperty) {
+					return newData;
+				}
+			}
+			// If cache is null or frontmatter not populated yet, continue to read frontmatter
+			// This ensures banners load correctly even if cache isn't ready
+		}
+		// For non-MD files (MDX, etc.), we always need to read the file (no cache available)
 
 		// Get frontmatter using MDX-compatible utility
 		const frontmatter = await getFrontmatter(this.app, file);
@@ -190,7 +231,6 @@ export class BannerService {
 		}
 
 		// Parse icon property if enabled
-		const deviceSettings = this.getDeviceSettings();
 		if (deviceSettings.iconEnabled) {
 			const iconValue = frontmatter[iconProp];
 			if (iconValue && typeof iconValue === 'string') {
@@ -367,13 +407,29 @@ export class BannerService {
 	 * Inject banners into containers
 	 */
 	private injectBanners(banners: HTMLElement[], containers: NodeListOf<HTMLElement>): void {
+		const deviceSettings = this.getDeviceSettings();
+		const shouldAnimate = deviceSettings.animation;
+		
 		containers.forEach((container, index) => {
 			const banner = banners[index];
 			if (banner) {
+				// Remove static class if it exists to allow animation
+				banner.classList.remove(CSS_CLASSES.Static);
 				container.prepend(banner);
-				banner.onanimationend = () => {
+				
+				if (shouldAnimate) {
+					// Force reflow and start animation on next frame
+					void banner.offsetHeight; // Force reflow
+					requestAnimationFrame(() => {
+						// Animation should start now
+						banner.onanimationend = () => {
+							banner.classList.add(CSS_CLASSES.Static);
+						};
+					});
+				} else {
+					// Animation disabled - add static class immediately
 					banner.classList.add(CSS_CLASSES.Static);
-				};
+				}
 			}
 		});
 	}

@@ -92,6 +92,7 @@ export interface BannerDeviceSettings {
 	borderRadius: [number, number, number, number];
 	padding: number;
 	fade: boolean;
+	animation: boolean;
 	
 	// Icon settings
 	iconEnabled: boolean;
@@ -162,6 +163,7 @@ export const DEFAULT_BANNER_DEVICE_SETTINGS: Record<DeviceType, BannerDeviceSett
 		borderRadius: [8, 8, 8, 8],
 		padding: 8,
 		fade: true,
+		animation: false,
 		iconEnabled: false,
 		iconSize: 96,
 		iconRadius: 8,
@@ -181,6 +183,7 @@ export const DEFAULT_BANNER_DEVICE_SETTINGS: Record<DeviceType, BannerDeviceSett
 		borderRadius: [8, 8, 8, 8],
 		padding: 8,
 		fade: true,
+		animation: false,
 		iconEnabled: false,
 		iconSize: 96,
 		iconRadius: 8,
@@ -200,6 +203,7 @@ export const DEFAULT_BANNER_DEVICE_SETTINGS: Record<DeviceType, BannerDeviceSett
 		borderRadius: [8, 8, 8, 8],
 		padding: 8,
 		fade: true,
+		animation: false,
 		iconEnabled: false,
 		iconSize: 56,
 		iconRadius: 8,
