@@ -88,6 +88,32 @@ export class PropertyHandler {
 	 * Public method so PasteHandler can get the formatted value for UI updates
 	 */
 	formatPropertyLink(imageFile: TFile, noteFile: TFile): string {
+		// Handle ObsidianDefault first - use Obsidian's generateMarkdownLink API
+		if (this.settings.propertyLinkFormat === PropertyLinkFormat.ObsidianDefault) {
+			// Use Obsidian's API which respects useMarkdownLinks, newLinkFormat, etc.
+			const generatedLink = this.app.fileManager.generateMarkdownLink(imageFile, noteFile.path);
+			
+			// Extract the link part for properties
+			// Obsidian may generate: ![[path]] or ![](path) or [[path]] or [](path)
+			if (generatedLink.startsWith('![') && generatedLink.includes(']]')) {
+				// Wikilink with embed: ![[path]] -> [[path]]
+				return generatedLink.substring(1);
+			} else if (generatedLink.startsWith('![') && generatedLink.includes('](')) {
+				// Markdown link with embed: ![](path) -> extract path from parentheses
+				const match = generatedLink.match(/!\[.*?\]\((.*?)\)/);
+				return match && match[1] ? match[1] : generatedLink;
+			} else if (generatedLink.startsWith('[[') && generatedLink.endsWith(']]')) {
+				// Wikilink without embed: [[path]] -> keep as is
+				return generatedLink;
+			} else if (generatedLink.includes('](')) {
+				// Markdown link without embed: [](path) -> extract path
+				const match = generatedLink.match(/\[.*?\]\((.*?)\)/);
+				return match && match[1] ? match[1] : generatedLink;
+			}
+			// Fallback: return as-is
+			return generatedLink;
+		}
+
 		let pathToUse: string;
 
 		switch (this.settings.propertyLinkFormat) {

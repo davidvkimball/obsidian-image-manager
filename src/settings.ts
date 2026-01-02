@@ -334,6 +334,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.setDesc('How to format the image link in properties')
 				.addDropdown((dropdown) => {
 					dropdown
+						.addOption(PropertyLinkFormat.ObsidianDefault, "Use Obsidian's settings")
 						.addOption(PropertyLinkFormat.Path, 'Plain path (path/to/image.jpg)')
 						.addOption(PropertyLinkFormat.RelativePath, 'Relative path (./image.jpg)')
 						.addOption(PropertyLinkFormat.Wikilink, 'Wikilink ([[path/to/image.jpg]])')
@@ -386,9 +387,9 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.setDesc('Default property name when inserting to properties via command')
 				.addText((text) => {
 					text
-						// False positive: "cover" is a placeholder for property name
-						// eslint-disable-next-line obsidianmd/ui/sentence-case
-						.setPlaceholder('cover')
+					// False positive: "banner" is a placeholder for property name
+					// eslint-disable-next-line obsidianmd/ui/sentence-case
+					.setPlaceholder('banner')
 						.setValue(this.plugin.settings.defaultPropertyName)
 						.onChange(async (value) => {
 							this.plugin.settings.defaultPropertyName = value;

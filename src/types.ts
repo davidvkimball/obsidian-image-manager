@@ -37,6 +37,7 @@ export enum ImageSize {
  * Link format for inserting images into properties
  */
 export enum PropertyLinkFormat {
+	ObsidianDefault = 'obsidian', // Use Obsidian's default link format (respects useMarkdownLinks, newLinkFormat)
 	Path = 'path',           // cover: path/to/image.jpg
 	RelativePath = 'relative', // cover: ./image.jpg or image.jpg (same folder)
 	Wikilink = 'wikilink',   // cover: "[[path/to/image.jpg]]"
@@ -297,9 +298,9 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	
 	// Property Insertion
 	enablePropertyPaste: true,
-	propertyLinkFormat: PropertyLinkFormat.Path,
+	propertyLinkFormat: PropertyLinkFormat.ObsidianDefault,
 	customPropertyLinkFormat: '{image-url}',
-	defaultPropertyName: '',
+	defaultPropertyName: 'banner',
 	
 	// Conversion
 	autoConvertRemoteImages: false,
