@@ -57,7 +57,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 
 	private renderGeneralSettings(containerEl: HTMLElement): void {
 		// General settings without heading (first section doesn't need a heading)
-		const group = createSettingsGroup(containerEl);
+		const group = createSettingsGroup(containerEl, undefined, 'image-manager');
 
 		group.addSetting((setting) => {
 			setting
@@ -156,7 +156,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 	}
 
 	private renderImageServicesSettings(containerEl: HTMLElement): void {
-		const group = createSettingsGroup(containerEl, 'Image services');
+		const group = createSettingsGroup(containerEl, 'Image services', 'image-manager');
 
 		group.addSetting((setting) => {
 			setting
@@ -312,7 +312,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 	}
 
 	private renderPropertySettings(containerEl: HTMLElement): void {
-		const group = createSettingsGroup(containerEl, 'Property insertion');
+		const group = createSettingsGroup(containerEl, 'Property insertion', 'image-manager');
 
 		group.addSetting((setting) => {
 			setting
@@ -400,7 +400,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 	}
 
 	private renderConversionSettings(containerEl: HTMLElement): void {
-		const group = createSettingsGroup(containerEl, 'Remote image conversion');
+		const group = createSettingsGroup(containerEl, 'Remote image conversion', 'image-manager');
 
 		group.addSetting((setting) => {
 			setting
@@ -465,7 +465,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 	}
 
 	private renderRenameSettings(containerEl: HTMLElement): void {
-		const group = createSettingsGroup(containerEl, 'Rename options');
+		const group = createSettingsGroup(containerEl, 'Rename options', 'image-manager');
 
 		group.addSetting((setting) => {
 			setting
@@ -571,7 +571,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 	}
 
 	private renderBannerSettings(containerEl: HTMLElement): void {
-		const group = createSettingsGroup(containerEl, 'Banner images');
+		const group = createSettingsGroup(containerEl, 'Banner images', 'image-manager');
 		const currentDevice = this.getCurrentDevice();
 		const deviceSettings = this.plugin.settings.banner[currentDevice];
 		const defaultDeviceSettings = DEFAULT_BANNER_DEVICE_SETTINGS[currentDevice];
@@ -876,7 +876,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 	}
 
 	private renderAdvancedSettings(containerEl: HTMLElement): void {
-		const group = createSettingsGroup(containerEl, 'Advanced');
+		const group = createSettingsGroup(containerEl, 'Advanced', 'image-manager');
 
 		group.addSetting((setting) => {
 			setting

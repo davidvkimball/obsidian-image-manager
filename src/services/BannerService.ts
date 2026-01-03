@@ -39,7 +39,7 @@ import {
 	BannerIconType,
 	DeviceType,
 } from '../types';
-import { getFrontmatter, isMarkdownFile, isMdxFile } from '../utils/mdx-frontmatter';
+import { getFrontmatter } from '../utils/mdx-frontmatter';
 
 // CSS class names
 const CSS_CLASSES = {
