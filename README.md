@@ -1,6 +1,6 @@
 # Image Manager for Obsidian
 
-Insert, rename, and sort external images by transforming them into local files within your notes.
+Insert, rename, and sort images within your notes.
 
 Image Manager unifies functionality from multiple image-related plugins into one cohesive experience, providing comprehensive image management for your Obsidian vault.
 
