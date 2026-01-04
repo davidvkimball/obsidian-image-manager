@@ -215,9 +215,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting((setting) => {
 			setting
 				.setName('Unsplash proxy server')
-				// False positive: "Unsplash" is a proper noun (service name) and should be capitalized
-				// eslint-disable-next-line obsidianmd/ui/sentence-case
-				.setDesc('Optional proxy server for Unsplash (leave empty to use built-in)')
+				.setDesc('Optional proxy server (leave empty to use built-in)')
 				.addText((text) => {
 					text
 						.setPlaceholder('https://your-proxy.com/')
@@ -235,9 +233,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.setDesc('Get your API key from https://www.pexels.com/api/new/')
 				.addText((text) => {
 					text
-						// False positive: "Pexels" is a proper noun (service name) and should be capitalized
-						// eslint-disable-next-line obsidianmd/ui/sentence-case
-						.setPlaceholder('Your Pexels api key...')
+						.setPlaceholder('Pexels API key')
 						.setValue(this.plugin.settings.pexelsApiKey)
 						.onChange(async (value) => {
 							this.plugin.settings.pexelsApiKey = value;
@@ -252,9 +248,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.setDesc('Get your API key from https://pixabay.com/api/docs/')
 				.addText((text) => {
 					text
-						// False positive: "Pixabay" is a proper noun (service name) and should be capitalized
-						// eslint-disable-next-line obsidianmd/ui/sentence-case
-						.setPlaceholder('Your Pixabay api key...')
+						.setPlaceholder('Pixabay API key')
 						.setValue(this.plugin.settings.pixabayApiKey)
 						.onChange(async (value) => {
 							this.plugin.settings.pixabayApiKey = value;
@@ -281,9 +275,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting((setting) => {
 			setting
 				.setName('Insert referral')
-				// False positive: Text is already in sentence case, example text in parentheses is technical notation
-				// eslint-disable-next-line obsidianmd/ui/sentence-case
-				.setDesc('Insert the reference text (e.g. "Photo by [author] on [provider]")')
+				.setDesc('Insert the reference text')
 				.addToggle((toggle) => {
 					toggle
 						.setValue(this.plugin.settings.insertReferral)
@@ -297,9 +289,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting((setting) => {
 			setting
 				.setName('Insert backlink')
-				// False positive: Text is already in sentence case, example text in parentheses is technical notation
-				// eslint-disable-next-line obsidianmd/ui/sentence-case
-				.setDesc('Insert a backlink (image HTML location on provider website) in front of the reference text (e.g. "[Backlink](url) | Photo by...")')
+				.setDesc('Insert a backlink in front of the reference text')
 				.addToggle((toggle) => {
 					toggle
 						.setValue(this.plugin.settings.insertBackLink)
@@ -912,9 +902,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 						? this.plugin.settings.supportedExtensions.join(', ')
 						: '';
 					text
-						// False positive: "md, mdx" are file extensions (technical notation), not UI text
-						// eslint-disable-next-line obsidianmd/ui/sentence-case
-						.setPlaceholder('md, mdx')
+						.setPlaceholder('File extensions')
 						.setValue(currentValue)
 						.onChange(async (value) => {
 							const extensions = value
