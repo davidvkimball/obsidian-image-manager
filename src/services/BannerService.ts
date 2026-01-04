@@ -184,6 +184,15 @@ export class BannerService {
 				const imageProp = propertySettings.imageProperty;
 				const iconProp = propertySettings.iconProperty;
 				
+				// Check if hide property is enabled and set to truthy value
+				if (propertySettings.hidePropertyEnabled && propertySettings.hideProperty) {
+					const hideProp = propertySettings.hideProperty;
+					const hideValue: unknown = cache.frontmatter[hideProp];
+					if (hideValue === true || hideValue === 'true' || hideValue === 1 || hideValue === '1') {
+						return newData;
+					}
+				}
+				
 				// Check if banner or icon property exists in cache
 				const hasBannerProperty = cache.frontmatter[imageProp] != null;
 				const hasIconProperty = deviceSettings.iconEnabled && cache.frontmatter[iconProp] != null;
@@ -206,6 +215,16 @@ export class BannerService {
 		}
 
 		const propertySettings = this.settings.banner.properties;
+		
+		// Check if hide property is enabled and set to truthy value
+		if (propertySettings.hidePropertyEnabled && propertySettings.hideProperty) {
+			const hideProp = propertySettings.hideProperty;
+			const hideValue: unknown = frontmatter[hideProp];
+			if (hideValue === true || hideValue === 'true' || hideValue === 1 || hideValue === '1') {
+				return newData;
+			}
+		}
+		
 		const imageProp = propertySettings.imageProperty;
 		const iconProp = propertySettings.iconProperty;
 
@@ -726,20 +745,26 @@ export class BannerService {
 	private calculateFontSize(textContent: string, iconSize: number): string {
 		const temp = document.createElement('span');
 		temp.addClass('im-measure-temp');
-		// Direct style manipulation required for measurement element
+		// Use setCssProperties for style manipulation (required for measurement element)
 		// This element is temporary and immediately removed after measurement
-		// eslint-disable-next-line obsidianmd/no-static-styles-assignment
-		temp.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;padding:0;margin:0;left:-9999px';
+		setCssProperties(temp, {
+			position: 'absolute',
+			visibility: 'hidden',
+			'white-space': 'nowrap',
+			padding: '0',
+			margin: '0',
+			left: '-9999px',
+		});
 		temp.textContent = textContent.toUpperCase();
 		document.body.appendChild(temp);
 		
 		const checkWidth = iconSize - 16;
 		let fontSize = iconSize; // Start big
-		temp.style.fontSize = `${fontSize}px`;
+		setCssProperties(temp, { 'font-size': `${fontSize}px` });
 
 		while (temp.offsetWidth > checkWidth && fontSize > 1) {
 			fontSize -= 1;
-			temp.style.fontSize = `${fontSize}px`;
+			setCssProperties(temp, { 'font-size': `${fontSize}px` });
 		}
 
 		document.body.removeChild(temp);

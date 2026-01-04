@@ -46,7 +46,7 @@ export class ImageProcessor {
 			const extension = this.getExtension(file);
 
 			// Generate suggested name from template
-			const suggestedName = await this.generateSuggestedName(activeFile);
+			const suggestedName = this.generateSuggestedName(activeFile);
 
 			// Get the name to use
 			let finalName = suggestedName;
@@ -182,7 +182,7 @@ export class ImageProcessor {
 			const extension = this.storageManager.getExtensionFromMimeType(contentType);
 
 			// Generate suggested name
-			const suggestedName = await this.generateSuggestedName(activeFile);
+			const suggestedName = this.generateSuggestedName(activeFile);
 
 			// Get final name
 			let finalName = suggestedName;
@@ -295,8 +295,8 @@ export class ImageProcessor {
 	/**
 	 * Generate a suggested name based on the template
 	 */
-	async generateSuggestedName(activeFile: TFile): Promise<string> {
-		const variables = await buildTemplateVariables(this.app, activeFile);
+	generateSuggestedName(activeFile: TFile): string {
+		const variables = buildTemplateVariables(this.app, activeFile);
 		const rendered = renderTemplate(this.settings.imageNameTemplate, variables);
 
 		// Check if the result is meaningful
@@ -430,7 +430,7 @@ export class ImageProcessor {
 	 */
 	private log(...args: unknown[]): void {
 		if (this.settings.debugMode) {
-			console.log('[Image Manager]', ...args);
+			console.debug('[Image Manager]', ...args);
 		}
 	}
 }

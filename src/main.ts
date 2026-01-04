@@ -316,7 +316,7 @@ export default class ImageManagerPlugin extends Plugin {
 	 */
 	private log(...args: unknown[]): void {
 		if (this.settings?.debugMode) {
-			console.log('[Image Manager]', ...args);
+			console.debug('[Image Manager]', ...args);
 		}
 	}
 }

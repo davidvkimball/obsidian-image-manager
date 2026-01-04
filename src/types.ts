@@ -113,6 +113,8 @@ export interface BannerDeviceSettings {
 export interface BannerPropertySettings {
 	imageProperty: string;
 	iconProperty: string;
+	hidePropertyEnabled: boolean;
+	hideProperty: string;
 }
 
 /**
@@ -224,6 +226,8 @@ export const DEFAULT_BANNER_SETTINGS: BannerSettings = {
 	properties: {
 		imageProperty: 'banner',
 		iconProperty: 'icon',
+		hidePropertyEnabled: false,
+		hideProperty: '',
 	},
 	desktop: { ...DEFAULT_BANNER_DEVICE_SETTINGS[DeviceType.Desktop] },
 	tablet: { ...DEFAULT_BANNER_DEVICE_SETTINGS[DeviceType.Tablet] },

@@ -155,9 +155,9 @@ export class PropertyHandler {
 	 */
 	private getRelativePath(fromFile: TFile, toFile: TFile): string {
 		// If using wikilinks, we can use just the file name
-		// Access Obsidian's internal config 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-		const useMarkdownLinks = ((this.app.vault as any).config?.useMarkdownLinks as boolean) ?? false;
+		// Access Obsidian's internal config (not in public API types but accessible at runtime)
+		const vaultConfig = (this.app.vault as unknown as { config?: { useMarkdownLinks?: boolean } }).config;
+		const useMarkdownLinks = vaultConfig?.useMarkdownLinks ?? false;
 		const useWikilinks = !useMarkdownLinks;
 
 		if (useWikilinks && this.settings.propertyLinkFormat === PropertyLinkFormat.Wikilink) {
@@ -172,10 +172,10 @@ export class PropertyHandler {
 	/**
 	 * Get the current value of a property
 	 */
-	async getPropertyValue(
+	getPropertyValue(
 		file: TFile,
 		propertyName: string
-	): Promise<unknown> {
+	): unknown {
 		const cache = this.app.metadataCache.getFileCache(file);
 		return cache?.frontmatter?.[propertyName];
 	}
@@ -183,7 +183,7 @@ export class PropertyHandler {
 	/**
 	 * Check if a property exists in frontmatter
 	 */
-	async hasProperty(file: TFile, propertyName: string): Promise<boolean> {
+	hasProperty(file: TFile, propertyName: string): boolean {
 		const cache = this.app.metadataCache.getFileCache(file);
 		return cache?.frontmatter?.[propertyName] !== undefined;
 	}

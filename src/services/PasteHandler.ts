@@ -120,7 +120,7 @@ export class PasteHandler {
 
 		// Debug: Log that we detected a property field
 		if (this.settings.debugMode) {
-			console.log('[Image Manager] Property paste detected', {
+			console.debug('[Image Manager] Property paste detected', {
 				activeElement: activeEl.tagName,
 				classes: activeEl.className,
 				propertyName: this.getPropertyName(activeEl)
@@ -200,7 +200,7 @@ export class PasteHandler {
 			);
 			
 			if (this.settings.debugMode) {
-				console.log('[Image Manager] Updating property UI', {
+				console.debug('[Image Manager] Updating property UI', {
 					propertyName,
 					linkValue,
 					propertyElFound: !!propertyEl
@@ -216,7 +216,7 @@ export class PasteHandler {
 					const currentValue = inputEl instanceof HTMLInputElement || inputEl instanceof HTMLTextAreaElement
 						? inputEl.value
 						: inputEl.textContent || inputEl.innerText;
-					console.log('[Image Manager] Found input field, updating value', {
+					console.debug('[Image Manager] Found input field, updating value', {
 						elementType: inputEl.tagName,
 						currentValue,
 						newValue: linkValue

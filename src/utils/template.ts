@@ -97,10 +97,10 @@ function formatTime(date: Date, format: string): string {
 /**
  * Build template variables from a file and app context
  */
-export async function buildTemplateVariables(
+export function buildTemplateVariables(
 	app: App,
 	activeFile: TFile
-): Promise<NameTemplateVariables> {
+): NameTemplateVariables {
 	const cache = app.metadataCache.getFileCache(activeFile);
 	const frontmatter = cache?.frontmatter;
 	

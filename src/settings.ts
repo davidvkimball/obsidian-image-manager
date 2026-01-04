@@ -215,9 +215,9 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting((setting) => {
 			setting
 				.setName('Unsplash proxy server')
-				// False positive: "Unsplash" and "API" are proper nouns
+				// False positive: "Unsplash" is a proper noun (service name) and should be capitalized
 				// eslint-disable-next-line obsidianmd/ui/sentence-case
-				.setDesc('Optional proxy server for Unsplash API (leave empty to use built-in)')
+				.setDesc('Optional proxy server for Unsplash (leave empty to use built-in)')
 				.addText((text) => {
 					text
 						.setPlaceholder('https://your-proxy.com/')
@@ -235,9 +235,9 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.setDesc('Get your API key from https://www.pexels.com/api/new/')
 				.addText((text) => {
 					text
-						// False positive: "Pexels" and "API" are proper nouns
+						// False positive: "Pexels" is a proper noun (service name) and should be capitalized
 						// eslint-disable-next-line obsidianmd/ui/sentence-case
-						.setPlaceholder('Your Pexels API key...')
+						.setPlaceholder('Your Pexels api key...')
 						.setValue(this.plugin.settings.pexelsApiKey)
 						.onChange(async (value) => {
 							this.plugin.settings.pexelsApiKey = value;
@@ -252,9 +252,9 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.setDesc('Get your API key from https://pixabay.com/api/docs/')
 				.addText((text) => {
 					text
-						// False positive: "Pixabay" and "API" are proper nouns
+						// False positive: "Pixabay" is a proper noun (service name) and should be capitalized
 						// eslint-disable-next-line obsidianmd/ui/sentence-case
-						.setPlaceholder('Your Pixabay API key...')
+						.setPlaceholder('Your Pixabay api key...')
 						.setValue(this.plugin.settings.pixabayApiKey)
 						.onChange(async (value) => {
 							this.plugin.settings.pixabayApiKey = value;
@@ -281,9 +281,9 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting((setting) => {
 			setting
 				.setName('Insert referral')
-				// False positive: "Insert" is a verb, "referral" is a technical term
+				// False positive: Text is already in sentence case, example text in parentheses is technical notation
 				// eslint-disable-next-line obsidianmd/ui/sentence-case
-				.setDesc('Insert the reference text (e.g., "Photo by [author] on [provider]")')
+				.setDesc('Insert the reference text (e.g. "Photo by [author] on [provider]")')
 				.addToggle((toggle) => {
 					toggle
 						.setValue(this.plugin.settings.insertReferral)
@@ -297,9 +297,9 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting((setting) => {
 			setting
 				.setName('Insert backlink')
-				// False positive: "backlink" is a technical term
+				// False positive: Text is already in sentence case, example text in parentheses is technical notation
 				// eslint-disable-next-line obsidianmd/ui/sentence-case
-				.setDesc('Insert a backlink (image HTML location on Provider website) in front of the reference text (e.g., "[Backlink](url) | Photo by...")')
+				.setDesc('Insert a backlink (image HTML location on provider website) in front of the reference text (e.g. "[Backlink](url) | Photo by...")')
 				.addToggle((toggle) => {
 					toggle
 						.setValue(this.plugin.settings.insertBackLink)
@@ -387,9 +387,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.setDesc('Default property name when inserting to properties via command')
 				.addText((text) => {
 					text
-					// False positive: "banner" is a placeholder for property name
-					// eslint-disable-next-line obsidianmd/ui/sentence-case
-					.setPlaceholder('banner')
+					.setPlaceholder('Banner')
 						.setValue(this.plugin.settings.defaultPropertyName)
 						.onChange(async (value) => {
 							this.plugin.settings.defaultPropertyName = value;
@@ -405,9 +403,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting((setting) => {
 			setting
 				.setName('Auto-convert remote images')
-				// False positive: "URLs" is an acronym
-				// eslint-disable-next-line obsidianmd/ui/sentence-case
-				.setDesc('Automatically download and replace remote image URLs with local files')
+				.setDesc('Automatically download and replace remote image urls with local files')
 				.addToggle((toggle) => {
 					toggle
 						.setValue(this.plugin.settings.autoConvertRemoteImages)
@@ -711,9 +707,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.setDesc('Name of the banner property this plugin will look for in the frontmatter')
 				.addText((text) => {
 					text
-						// False positive: "banner" is a property name placeholder, not UI text
-						// eslint-disable-next-line obsidianmd/ui/sentence-case
-						.setPlaceholder('banner')
+						.setPlaceholder('Banner')
 						.setValue(propertySettings.imageProperty)
 						.onChange(async (value) => {
 							this.plugin.settings.banner.properties.imageProperty = value || 'banner';
@@ -728,9 +722,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.setDesc('Name of the icon property this plugin will look for in the frontmatter')
 				.addText((text) => {
 					text
-						// False positive: "icon" is a property name placeholder, not UI text
-						// eslint-disable-next-line obsidianmd/ui/sentence-case
-						.setPlaceholder('icon')
+						.setPlaceholder('Icon')
 						.setValue(propertySettings.iconProperty)
 						.onChange(async (value) => {
 							this.plugin.settings.banner.properties.iconProperty = value || 'icon';
@@ -738,6 +730,39 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 						});
 				});
 		});
+
+		group.addSetting((setting) => {
+			setting
+				.setName('Enable per-note banner hiding')
+				.setDesc('Allow disabling banners on a per-note basis using a frontmatter property')
+				.addToggle((toggle) => {
+					toggle
+						.setValue(propertySettings.hidePropertyEnabled)
+						.onChange(async (value) => {
+							this.plugin.settings.banner.properties.hidePropertyEnabled = value;
+							await this.plugin.saveSettings();
+							this.refreshWithScrollPreserve(containerEl);
+						});
+				});
+		});
+
+		// Show hide property input when enabled
+		if (propertySettings.hidePropertyEnabled) {
+			group.addSetting((setting) => {
+				setting
+					.setName('Hide banner property')
+					.setDesc('Name of the frontmatter property that, when set to true, will hide the banner for that note')
+					.addText((text) => {
+						text
+							.setPlaceholder('Hide banner')
+							.setValue(propertySettings.hideProperty)
+							.onChange(async (value) => {
+								this.plugin.settings.banner.properties.hideProperty = value || '';
+								await this.plugin.saveSettings();
+							});
+					});
+			});
+		}
 
 		// Icon settings
 		group.addSetting((setting) => {
@@ -887,7 +912,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 						? this.plugin.settings.supportedExtensions.join(', ')
 						: '';
 					text
-						// False positive: "md, mdx" are file extensions
+						// False positive: "md, mdx" are file extensions (technical notation), not UI text
 						// eslint-disable-next-line obsidianmd/ui/sentence-case
 						.setPlaceholder('md, mdx')
 						.setValue(currentValue)

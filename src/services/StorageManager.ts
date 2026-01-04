@@ -25,7 +25,7 @@ export class StorageManager {
 	/**
 	 * Get the attachment folder path for a given note
 	 */
-	async getAttachmentFolder(noteFile: TFile): Promise<string> {
+	getAttachmentFolder(noteFile: TFile): string {
 		const notePath = noteFile.parent?.path ?? '';
 
 		switch (this.settings.attachmentLocation) {
@@ -48,9 +48,9 @@ export class StorageManager {
 	 * Get Obsidian's configured attachment folder
 	 */
 	private getObsidianAttachmentFolder(noteFile: TFile): string {
-		// Access Obsidian's internal config for attachment folder
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-		const attachmentFolderPath: string = ((this.app.vault as any).config?.attachmentFolderPath as string) ?? '/';
+		// Access Obsidian's internal config for attachment folder (not in public API types but accessible at runtime)
+		const vaultConfig = (this.app.vault as unknown as { config?: { attachmentFolderPath?: string } }).config;
+		const attachmentFolderPath: string = vaultConfig?.attachmentFolderPath ?? '/';
 		const notePath = noteFile.parent?.path ?? '';
 
 		if (attachmentFolderPath === '/') {
@@ -96,7 +96,7 @@ export class StorageManager {
 	 * Generate a unique file path for an image
 	 */
 	async getAvailablePath(baseName: string, extension: string, noteFile: TFile): Promise<string> {
-		const folder = await this.getAttachmentFolder(noteFile);
+		const folder = this.getAttachmentFolder(noteFile);
 		await this.ensureFolderExists(folder);
 
 		const sanitizedName = this.sanitizeFileName(baseName);
@@ -151,7 +151,7 @@ export class StorageManager {
 		
 		// Debug logging
 		if (this.settings.debugMode) {
-			console.log('[Image Manager] generateMarkdownLink', {
+			console.debug('[Image Manager] generateMarkdownLink', {
 				originalLink: link,
 				imageLink,
 				insertSize,
@@ -201,7 +201,7 @@ export class StorageManager {
 		
 		// Debug logging
 		if (this.settings.debugMode) {
-			console.log('[Image Manager] generateMarkdownLink result', {
+			console.debug('[Image Manager] generateMarkdownLink result', {
 				finalLink: imageLink
 			});
 		}
