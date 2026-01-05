@@ -250,7 +250,7 @@
 body {
 	/* Banner Variables */
 	--im-banner-padding: 8px;
-	--im-banner-radius: 8px 8px 8px 8px;
+	--im-banner-radius: 0px 0px 0px 0px;
 	--im-banner-height: 240px;
 	--im-banner-url: none;
 	--im-banner-repeat: no-repeat;
