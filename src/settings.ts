@@ -3,7 +3,7 @@
  * Settings tab with SettingGroup compatibility for Obsidian 1.11.0+
  */
 
-import { App, Platform, PluginSettingTab, requireApiVersion } from 'obsidian';
+import { App, BaseComponent, Platform, PluginSettingTab, requireApiVersion } from 'obsidian';
 import { createSettingsGroup } from './utils/settings-compat';
 import {
 	ImageManagerSettings,
@@ -17,6 +17,17 @@ import {
 	DEFAULT_BANNER_DEVICE_SETTINGS,
 } from './types';
 import type ImageManagerPlugin from './main';
+
+/**
+ * Interface for SecretComponent accessed via dynamic require
+ * SecretComponent is not available in type definitions for all Obsidian versions
+ */
+interface SecretComponentType {
+	new (app: App, el: HTMLElement): BaseComponent & {
+		setValue(value: string): void;
+		onChange(callback: (value: string) => void): void;
+	};
+}
 
 export { DEFAULT_SETTINGS };
 export type { ImageManagerSettings };
@@ -233,23 +244,20 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 			if (requireApiVersion('1.11.4')) {
 				// Use SecretComponent for newer versions
 				setting
-					.setDesc('Select a secret from secret storage containing your Pexels API key.')
+					.setDesc('Choose a secret that contains your Pexels API key.')
 					.addComponent((el) => {
 						// Use dynamic require to access SecretComponent (may not be in type definitions)
-						// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef, @typescript-eslint/no-unsafe-assignment
-						const obsidian = require('obsidian');
-						// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unnecessary-type-assertion
-						const SecretComponent = obsidian.SecretComponent as any;
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+						// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef -- SecretComponent not in type definitions for all Obsidian versions
+						const obsidian = require('obsidian') as { SecretComponent?: SecretComponentType };
+						const SecretComponent = obsidian.SecretComponent as SecretComponentType;
 						const component = new SecretComponent(this.app, el);
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 						component.setValue(this.plugin.settings.pexelsApiKeySecretId);
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-						component.onChange(async (value: string) => {
-							this.plugin.settings.pexelsApiKeySecretId = value;
-							await this.plugin.saveSettings();
+						component.onChange((value: string) => {
+							void (async () => {
+								this.plugin.settings.pexelsApiKeySecretId = value;
+								await this.plugin.saveSettings();
+							})();
 						});
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 						return component;
 					});
 			} else {
@@ -274,23 +282,20 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 			if (requireApiVersion('1.11.4')) {
 				// Use SecretComponent for newer versions
 				setting
-					.setDesc('Select a secret from secret storage containing your Pixabay API key.')
+					.setDesc('Choose a secret that contains your Pixabay API key.')
 					.addComponent((el) => {
 						// Use dynamic require to access SecretComponent (may not be in type definitions)
-						// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef, @typescript-eslint/no-unsafe-assignment
-						const obsidian = require('obsidian');
-						// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unnecessary-type-assertion
-						const SecretComponent = obsidian.SecretComponent as any;
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+						// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef -- SecretComponent not in type definitions for all Obsidian versions
+						const obsidian = require('obsidian') as { SecretComponent?: SecretComponentType };
+						const SecretComponent = obsidian.SecretComponent as SecretComponentType;
 						const component = new SecretComponent(this.app, el);
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 						component.setValue(this.plugin.settings.pixabayApiKeySecretId);
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-						component.onChange(async (value: string) => {
-							this.plugin.settings.pixabayApiKeySecretId = value;
-							await this.plugin.saveSettings();
+						component.onChange((value: string) => {
+							void (async () => {
+								this.plugin.settings.pixabayApiKeySecretId = value;
+								await this.plugin.saveSettings();
+							})();
 						});
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 						return component;
 					});
 			} else {

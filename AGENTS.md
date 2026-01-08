@@ -93,6 +93,7 @@ This plugin unifies functionality from 5 existing plugins:
 - **MDX Files**: Obsidian's `metadataCache` and `processFrontMatter` don't work with MDX files. Use `parseMdxFrontmatter()` and `processMdxFrontMatter()` utilities instead.
 - **Settings Groups**: Use `createSettingsGroup()` from `settings-compat.ts` to support both Obsidian 1.11.0+ (with native `SettingGroup`) and older versions (with manual heading fallback).
 - **Settings heading border**: We override `.setting-group-heading h3` in `styles.css` to drop the default border and only reintroduce it when the heading is not immediately followed by a `.setting-item`, preventing the double-line issue that older Obsidian builds show around these headings.
+- **Sentence-case linting false positives**: The `obsidianmd/ui/sentence-case` rule sometimes flags text that is already correct (e.g., descriptions containing proper nouns like "Pexels API key" or "Pixabay API key"). The rule cannot be disabled in code, but false positives can be handled with `/skip` in bot review comments. Don't spend excessive time trying to rephrase text that is already in proper sentence case - if the text is correct, note it as a false positive for bot review. See `.agents/linting-fixes-guide.md` for details.
 
 ---
 
