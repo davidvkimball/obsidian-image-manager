@@ -694,7 +694,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting((setting) => {
 			setting
 				.setName('Banner property')
-				.setDesc('Name of the banner property this plugin will look for in the frontmatter')
+				.setDesc('Name of the banner property this plugin will look for in the properties')
 				.addText((text) => {
 					text
 						.setPlaceholder('Banner')
@@ -709,7 +709,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting((setting) => {
 			setting
 				.setName('Icon property')
-				.setDesc('Name of the icon property this plugin will look for in the frontmatter')
+				.setDesc('Name of the icon property this plugin will look for in the properties')
 				.addText((text) => {
 					text
 						.setPlaceholder('Icon')
@@ -724,7 +724,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting((setting) => {
 			setting
 				.setName('Enable per-note banner hiding')
-				.setDesc('Allow disabling banners on a per-note basis using a frontmatter property')
+				.setDesc('Allow disabling banners on a per-note basis using a properties field')
 				.addToggle((toggle) => {
 					toggle
 						.setValue(propertySettings.hidePropertyEnabled)
@@ -741,7 +741,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 			group.addSetting((setting) => {
 				setting
 					.setName('Hide banner property')
-					.setDesc('Name of the frontmatter property that, when set to true, will hide the banner for that note')
+					.setDesc('Name of the property that, when set to true, will hide the banner for that note')
 					.addText((text) => {
 						text
 							.setPlaceholder('Hide banner')

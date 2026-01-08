@@ -27,10 +27,10 @@ This plugin unifies functionality from 5 existing plugins:
 1. **Image Inserter** (cloudy9101) - Remote image search from Unsplash, Pexels, Pixabay
 2. **Simple Image Inserter** (jdholtz) - Local file picker using OS native dialog
 3. **Paste Image Rename** (reorx) - Automatic rename dialog on paste/drop
-4. **Paste Image Into Property** (Nitero) - Insert images directly into frontmatter properties
+4. **Paste Image Into Property** (Nitero) - Insert images directly into properties
 5. **Local Images Plus** (Sergei-Korneev) - Convert remote/external images to local files
 
-**MDX Support**: Uses patterns from `obsidian-bases-cms` and `obsidian-property-over-filename` for MDX frontmatter handling since Obsidian's native `processFrontMatter` only works with `.md` files.
+**MDX Support**: Uses patterns from `obsidian-bases-cms` and `obsidian-property-over-filename` for MDX properties handling since Obsidian's native `processFrontMatter` only works with `.md` files.
 
 **SettingGroup Compatibility**: Uses the `settings-compat.ts` pattern for backward compatibility with Obsidian versions before 1.11.0.
 
@@ -41,6 +41,8 @@ This plugin unifies functionality from 5 existing plugins:
 - Test with both MD and MDX files after changes
 
 ### Project-Specific Conventions
+
+- **Terminology: Use "properties" not "frontmatter"**: Obsidian prefers the term "properties" over "frontmatter" or "front-matter" when referring to YAML metadata at the top of markdown files. All documentation, code comments, and UI text should use "properties" to align with Obsidian's official terminology.
 
 - Image handling flows through `ImageProcessor` service
 - Storage location logic is centralized in `StorageManager`

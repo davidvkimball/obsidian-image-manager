@@ -49,7 +49,7 @@ export function parseMdxFrontmatter(
 			body: bodyContent,
 		};
 	} catch (e) {
-		console.error('Error parsing MDX frontmatter:', e);
+		console.error('Error parsing MDX properties:', e);
 		// Return empty frontmatter but preserve body
 		return {
 			frontmatter: {},
@@ -74,7 +74,7 @@ export async function readMdxFrontmatter(
 		const parsed = parseMdxFrontmatter(content);
 		return parsed ? parsed.frontmatter : null;
 	} catch (e) {
-		console.error(`Error reading MDX frontmatter from ${file.path}:`, e);
+		console.error(`Error reading MDX properties from ${file.path}:`, e);
 		return null;
 	}
 }
@@ -108,7 +108,7 @@ export async function writeMdxFrontmatter(
 		// Write back to file
 		await app.vault.modify(file, newContent);
 	} catch (e) {
-		console.error(`Error writing MDX frontmatter to ${file.path}:`, e);
+		console.error(`Error writing MDX properties to ${file.path}:`, e);
 		throw e;
 	}
 }
@@ -149,7 +149,7 @@ export async function processMdxFrontMatter(
 		// Write back to file
 		await app.vault.modify(file, newContent);
 	} catch (e) {
-		console.error(`Error processing MDX frontmatter for ${file.path}:`, e);
+		console.error(`Error processing MDX properties for ${file.path}:`, e);
 		throw e;
 	}
 }

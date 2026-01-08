@@ -11,7 +11,7 @@ Image Manager unifies functionality from multiple image-related plugins into one
 - **Local file picker** - Select images from your computer using the OS native file explorer
 - **Remote image search** - Search and download images from Unsplash, Pexels, and Pixabay with filters for orientation, size, and more
 - **Paste and drop** - Paste images from clipboard or drag and drop files directly into notes
-- **Multiple insertion methods** - Insert into note content or directly into frontmatter properties
+- **Multiple insertion methods** - Insert into note content or directly into properties
 
 ### Image Management
 
@@ -23,10 +23,10 @@ Image Manager unifies functionality from multiple image-related plugins into one
 
 ### Property Integration
 
-- **Paste into properties** - Paste images directly into frontmatter properties with a single action
+- **Paste into properties** - Paste images directly into properties with a single action
 - **Multiple link formats** - Choose from Obsidian default, path, wikilink, markdown link, relative path, or custom format
-- **MDX support** - Full compatibility with MDX files in addition to standard Markdown (uses custom frontmatter handling)
-- **Default property name** - Configure which property to use when inserting images into frontmatter
+- **MDX support** - Full compatibility with MDX files in addition to standard Markdown (uses custom properties handling)
+- **Default property name** - Configure which property to use when inserting images into properties
 
 ### Remote Image Conversion
 
@@ -44,7 +44,7 @@ Image Manager unifies functionality from multiple image-related plugins into one
 
 ### Banner Images
 
-- **Banner display** - Display banner images from frontmatter properties at the top of notes
+- **Banner display** - Display banner images from properties at the top of notes
 - **Device-specific settings** - Configure different banner settings for desktop, tablet, and phone
 - **Customizable appearance** - Control height, offset, border radius, padding, fade effects, and animations
 - **Icon support** - Display icons alongside banners with customizable positioning and styling
@@ -54,8 +54,8 @@ Image Manager unifies functionality from multiple image-related plugins into one
 
 - `Insert local image` - Open file picker to select and insert a local image
 - `Insert remote image` - Open remote image search modal
-- `Insert local image to property` - Insert a local image into a frontmatter property
-- `Insert remote image to property` - Insert a remote image into a frontmatter property
+- `Insert local image to property` - Insert a local image into a property
+- `Insert remote image to property` - Insert a remote image into a property
 - `Convert remote images` - Convert remote images to local files in the current note
 - `Convert all remote images` - Convert remote images to local files in all notes
 
@@ -107,7 +107,7 @@ The plugin offers extensive configuration through Settings → Image Manager:
 
 - **General Settings**: Enable/disable rename prompts for paste and drop actions
 - **Image Services**: Configure API keys and proxy URLs for Unsplash, Pexels, and Pixabay
-- **Property Insertion**: Set default property name and link format for frontmatter insertion
+- **Property Insertion**: Set default property name and link format for property insertion
 - **Conversion**: Configure automatic conversion of remote images on note open/save
 - **Rename Options**: Customize name templates and descriptive image prompts
 - **Banner Images**: Configure device-specific banner display settings
@@ -175,14 +175,14 @@ This plugin unifies functionality from the following excellent plugins:
 - [Image Inserter](https://github.com/cloudy9101/obsidian-image-inserter) by cloudy9101 - Remote image search from Unsplash, Pexels, Pixabay
 - [Simple Image Inserter](https://github.com/jdholtz/obsidian-image-inserter) by jdholtz - Local file picker using OS native dialog
 - [Paste Image Rename](https://github.com/reorx/obsidian-paste-image-rename) by reorx - Automatic rename dialog on paste/drop
-- [Paste Image Into Property](https://github.com/Nitero/obsidian-paste-image-into-property) by Nitero - Insert images directly into frontmatter properties
+- [Paste Image Into Property](https://github.com/Nitero/obsidian-paste-image-into-property) by Nitero - Insert images directly into properties
 - [Local Images Plus](https://github.com/Sergei-Korneev/obsidian-local-images-plus) by Sergei-Korneev - Convert remote/external images to local files
-- [Simple Banner](https://github.com/eatcodeplay/obsidian-simple-banner) by eatcodeplay - Banner image display from frontmatter properties
+- [Simple Banner](https://github.com/eatcodeplay/obsidian-simple-banner) by eatcodeplay - Banner image display from properties
 
 Additional inspiration and patterns from:
 
-- [obsidian-bases-cms](https://github.com/davidvkimball/obsidian-bases-cms) - MDX frontmatter handling patterns
-- [obsidian-property-over-filename](https://github.com/davidvkimball/obsidian-property-over-filename) - MDX frontmatter cache patterns
+- [obsidian-bases-cms](https://github.com/davidvkimball/obsidian-bases-cms) - MDX properties handling patterns
+- [obsidian-property-over-filename](https://github.com/davidvkimball/obsidian-property-over-filename) - MDX properties cache patterns
 - [obsidian-astro-composer](https://github.com/davidvkimball/obsidian-astro-composer) - Descriptive image naming patterns
 
 ## License
