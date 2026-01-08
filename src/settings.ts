@@ -247,7 +247,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 					.setDesc('Choose a secret that contains your Pexels API key.')
 					.addComponent((el) => {
 						// Use dynamic require to access SecretComponent (may not be in type definitions)
-						// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef -- SecretComponent not in type definitions for all Obsidian versions
+						// eslint-disable-next-line @typescript-eslint/no-require-imports -- SecretComponent not in type definitions for all Obsidian versions
 						const obsidian = require('obsidian') as { SecretComponent?: SecretComponentType };
 						const SecretComponent = obsidian.SecretComponent as SecretComponentType;
 						const component = new SecretComponent(this.app, el);
@@ -285,7 +285,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 					.setDesc('Choose a secret that contains your Pixabay API key.')
 					.addComponent((el) => {
 						// Use dynamic require to access SecretComponent (may not be in type definitions)
-						// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef -- SecretComponent not in type definitions for all Obsidian versions
+						// eslint-disable-next-line @typescript-eslint/no-require-imports -- SecretComponent not in type definitions for all Obsidian versions
 						const obsidian = require('obsidian') as { SecretComponent?: SecretComponentType };
 						const SecretComponent = obsidian.SecretComponent as SecretComponentType;
 						const component = new SecretComponent(this.app, el);

@@ -11,6 +11,10 @@ export default defineConfig([
   ...obsidianmd.configs.recommended,
   {
     files: ["**/*.ts"],
+    // Enable reporting of unused disable directives (matches Obsidian bot behavior)
+    linterOptions: {
+      reportUnusedDisableDirectives: "error"
+    },
     languageOptions: {
       parser: tsparser,
       parserOptions: { 
@@ -19,6 +23,7 @@ export default defineConfig([
       },
       globals: {
         ...globals.browser,
+        require: "readonly", // Node.js require function (available in Obsidian's environment)
         DomElementInfo: "readonly",
         SvgElementInfo: "readonly",
         activeDocument: "readonly",
