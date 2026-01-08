@@ -385,6 +385,21 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 						});
 				});
 		});
+
+		group.addSetting((setting) => {
+			setting
+				.setName('Default icon property name')
+				.setDesc('Default property name when inserting to icon property via command')
+				.addText((text) => {
+					text
+						.setPlaceholder('Icon')
+						.setValue(this.plugin.settings.defaultIconPropertyName)
+						.onChange(async (value) => {
+							this.plugin.settings.defaultIconPropertyName = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		});
 	}
 
 	private renderConversionSettings(containerEl: HTMLElement): void {

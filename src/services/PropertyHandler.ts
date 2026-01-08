@@ -192,12 +192,14 @@ export class PropertyHandler {
 	 * Insert an image from a URL into a property
 	 * Downloads the image, saves it locally, and sets the property
 	 * @param remoteImage Optional RemoteImage object for generating referral text
+	 * @param suggestedNameOverride Optional override for suggested name (e.g., from search term)
 	 */
 	async insertImageFromUrl(
 		imageUrl: string,
 		noteFile: TFile,
 		propertyName: string,
-		remoteImage?: RemoteImage
+		remoteImage?: RemoteImage,
+		suggestedNameOverride?: string
 	): Promise<void> {
 		// Use ImageProcessor to handle the download and save
 		// This ensures consistent naming, deduplication, and rename modal handling
@@ -206,7 +208,8 @@ export class PropertyHandler {
 			imageUrl,
 			noteFile,
 			true, // Show rename modal if enabled
-			true // isPropertyInsertion - skip descriptive images
+			true, // isPropertyInsertion - skip descriptive images
+			suggestedNameOverride // Pass search term as suggested name
 		);
 
 		if (!result.success || !result.file) {

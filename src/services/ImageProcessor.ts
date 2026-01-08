@@ -163,12 +163,14 @@ export class ImageProcessor {
 	/**
 	 * Process an image from a URL (download and save locally)
 	 * @param isPropertyInsertion - If true, skip descriptive images (only applies to note body)
+	 * @param suggestedNameOverride - Optional override for suggested name (e.g., from search term)
 	 */
 	async processImageUrl(
 		url: string,
 		activeFile: TFile,
 		showRenameModal: boolean = true,
-		isPropertyInsertion: boolean = false
+		isPropertyInsertion: boolean = false,
+		suggestedNameOverride?: string
 	): Promise<ProcessedImage> {
 		try {
 			// Download the image
@@ -181,8 +183,8 @@ export class ImageProcessor {
 			const contentType = response.headers['content-type'] ?? 'image/png';
 			const extension = this.storageManager.getExtensionFromMimeType(contentType);
 
-			// Generate suggested name
-			const suggestedName = this.generateSuggestedName(activeFile);
+			// Generate suggested name (use override if provided, otherwise generate from template)
+			const suggestedName = suggestedNameOverride ?? this.generateSuggestedName(activeFile);
 
 			// Get final name
 			let finalName = suggestedName;
@@ -201,7 +203,7 @@ export class ImageProcessor {
 
 				// Show descriptive image modal if enabled and NOT inserting to property, otherwise show rename modal
 				if (this.settings.enableDescriptiveImages && !isPropertyInsertion) {
-					const descResult = await openDescriptiveImageModal(this.app, tempFile);
+					const descResult = await openDescriptiveImageModal(this.app, tempFile, suggestedName);
 					
 					if (descResult.cancelled) {
 						await this.app.fileManager.trashFile(tempFile);
@@ -366,20 +368,19 @@ export class ImageProcessor {
 		try {
 			const extension = imageFile.extension;
 			let finalName = suggestedName;
+			let displayText = '';
 
 			// Handle descriptive images if enabled (note: this is for renaming existing files, not property insertion)
-			let displayText = '';
+			// If descriptive images is enabled, it handles the naming and we skip the rename modal
 			if (this.settings.enableDescriptiveImages) {
-				const descResult = await openDescriptiveImageModal(this.app, imageFile);
+				const descResult = await openDescriptiveImageModal(this.app, imageFile, suggestedName);
 				if (descResult.cancelled) {
 					return null; // User cancelled
 				}
 				displayText = descResult.description;
 				finalName = descResult.fileName; // Already kebab-cased
-			}
-
-			// Show rename modal if not auto-renaming
-			if (!this.settings.autoRename) {
+			} else if (!this.settings.autoRename) {
+				// Only show rename modal if descriptive images is disabled AND auto-rename is off
 				const result = await openRenameModal(
 					this.app,
 					imageFile,

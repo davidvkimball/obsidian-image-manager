@@ -238,6 +238,37 @@ export default class ImageManagerPlugin extends Plugin {
 			},
 		});
 
+		// Insert remote image to icon property
+		this.addCommand({
+			id: 'insert-remote-image-to-icon-property',
+			name: 'Insert remote image to icon property',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				openRemoteSearch(
+					this.app,
+					this.settings,
+					this.remoteService,
+					this.imageProcessor,
+					this.propertyHandler,
+					{ insertToProperty: true, propertyName: this.settings.defaultIconPropertyName }
+				);
+			},
+		});
+
+		// Insert local image to icon property
+		this.addCommand({
+			id: 'insert-local-image-to-icon-property',
+			name: 'Insert local image to icon property',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				openFilePicker(
+					this.app,
+					this.imageProcessor,
+					this.propertyHandler,
+					true, // insertToProperty
+					this.settings.defaultIconPropertyName
+				);
+			},
+		});
+
 		// Convert remote images in current file
 		this.addCommand({
 			id: 'convert-remote-images',

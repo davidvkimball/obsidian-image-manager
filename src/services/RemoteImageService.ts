@@ -6,7 +6,7 @@
 import { requestUrl } from 'obsidian';
 import { ImageManagerSettings, ImageProvider, ImageOrientation, RemoteImage, ImageSize } from '../types';
 
-// Unsplash proxy URL (built-in fallback) - matches Image Inserter
+// Unsplash proxy URL (built-in fallback) - matches Image Manager pattern
 const UNSPLASH_PROXY = 'https://insert-unsplash-image.cloudy9101.com/';
 
 export class RemoteImageService {
@@ -52,7 +52,7 @@ export class RemoteImageService {
 		}
 		const orientation = this.mapOrientation(this.settings.defaultOrientation);
 		
-		// Use URL constructor like Image Inserter does
+		// Use URL constructor pattern
 		const url = new URL('/search/photos', proxyUrl);
 		url.searchParams.set('query', query);
 		url.searchParams.set('page', String(page));
@@ -190,7 +190,6 @@ export class RemoteImageService {
 
 	/**
 	 * Generate referral text for an image (attribution)
-	 * Based on Image Inserter's referral format
 	 */
 	generateReferralText(image: RemoteImage): string {
 		if (!this.settings.insertReferral) {

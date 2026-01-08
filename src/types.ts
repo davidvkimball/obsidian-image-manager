@@ -258,6 +258,7 @@ export interface ImageManagerSettings {
 	propertyLinkFormat: PropertyLinkFormat;
 	customPropertyLinkFormat: string;
 	defaultPropertyName: string;
+	defaultIconPropertyName: string;
 	
 	// Conversion
 	autoConvertRemoteImages: boolean;
@@ -271,7 +272,7 @@ export interface ImageManagerSettings {
 	disableRenameNotice: boolean;
 	enableDescriptiveImages: boolean; // Ask for description, use as display text (note body only)
 	
-	// Image Insertion Options (from Image Inserter)
+	// Image Insertion Options (remote image attribution options)
 	insertSize: string; // Image size in markdown (e.g., "200" or "200x100")
 	insertReferral: boolean; // Insert attribution text (e.g., "Photo by [author] on [provider]")
 	insertBackLink: boolean; // Insert backlink before attribution (e.g., "[Backlink](url) | Photo by...")
@@ -309,6 +310,7 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	propertyLinkFormat: PropertyLinkFormat.ObsidianDefault,
 	customPropertyLinkFormat: '{image-url}',
 	defaultPropertyName: 'banner',
+	defaultIconPropertyName: 'icon',
 	
 	// Conversion
 	autoConvertRemoteImages: false,
@@ -322,7 +324,7 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	disableRenameNotice: false,
 	enableDescriptiveImages: false,
 	
-	// Image Insertion Options (from Image Inserter)
+	// Image Insertion Options (remote image attribution options)
 	insertSize: '', // Empty = no size specified
 	insertReferral: true, // Default to true (attribution)
 	insertBackLink: false, // Default to false

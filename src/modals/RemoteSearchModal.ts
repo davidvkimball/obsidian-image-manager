@@ -1,7 +1,6 @@
 /**
  * Remote Search Modal
  * Search and insert images from Unsplash, Pexels, and Pixabay
- * Based on Image Inserter's modal structure
  */
 
 import { App, Modal, Notice, MarkdownView, TFile, debounce } from 'obsidian';
@@ -340,14 +339,17 @@ export class RemoteSearchModal extends Modal {
 					downloadUrl,
 					activeFile,
 					this.options.propertyName,
-					image // Pass RemoteImage for referral text generation
+					image, // Pass RemoteImage for referral text generation
+					this.currentQuery // Pass search term as suggested name
 				);
 			} else {
 				// Insert into note body
 				const result = await this.imageProcessor.processImageUrl(
 					downloadUrl,
 					activeFile,
-					true // Show rename modal
+					true, // Show rename modal
+					false, // Not property insertion
+					this.currentQuery // Pass search term as suggested name
 				);
 
 				if (result.success && result.linkText) {

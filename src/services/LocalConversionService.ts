@@ -63,8 +63,8 @@ export class LocalConversionService {
 		let newContent = content;
 		let count = 0;
 
-		// Find all external image URLs
-		const externalImages = this.findExternalImages(content, sourceFile);
+		// Find all external image URLs (now async - verifies with HEAD requests)
+		const externalImages = await this.findExternalImages(content, sourceFile);
 
 		for (const image of externalImages) {
 			try {
@@ -160,9 +160,15 @@ export class LocalConversionService {
 
 	/**
 	 * Find all external images in content
+	 * Verifies each URL with HEAD request to ensure it actually serves an image
 	 */
-	private findExternalImages(content: string, sourceFile: TFile): ExternalImageMatch[] {
-		const matches: ExternalImageMatch[] = [];
+	private async findExternalImages(content: string, sourceFile: TFile): Promise<ExternalImageMatch[]> {
+		const candidateMatches: Array<{
+			fullMatch: string;
+			url: string;
+			alt?: string;
+			replacement: (localPath: string) => string;
+		}> = [];
 
 		// Markdown images: ![alt](url)
 		let match;
@@ -177,10 +183,10 @@ export class LocalConversionService {
 			const fullMatch = match[0];
 			const alt = match[1] ?? '';
 			const url = match[2];
-			// Only process if it's an external URL AND looks like an image URL
+			// Only process if it's an external URL and passes preliminary filter
 			if (url && this.isExternalUrl(url) && this.isImageUrl(url)) {
 				const sourceFileRef = sourceFile; // Capture for closure
-				matches.push({
+				candidateMatches.push({
 					fullMatch,
 					url,
 					alt,
@@ -226,9 +232,9 @@ export class LocalConversionService {
 			}
 			const fullMatch = match[0];
 			const url = match[1];
-			// Only process if it's an external URL AND looks like an image URL
+			// Only process if it's an external URL and passes preliminary filter
 			if (url && this.isExternalUrl(url) && this.isImageUrl(url)) {
-				matches.push({
+				candidateMatches.push({
 					fullMatch,
 					url,
 					replacement: (localPath: string) => `![](${encodeURI(localPath)})`,
@@ -236,7 +242,16 @@ export class LocalConversionService {
 			}
 		}
 
-		return matches;
+		// Verify each candidate URL with HEAD request
+		const verifiedMatches: ExternalImageMatch[] = [];
+		for (const candidate of candidateMatches) {
+			const isImage = await this.verifyImageUrl(candidate.url);
+			if (isImage) {
+				verifiedMatches.push(candidate);
+			}
+		}
+
+		return verifiedMatches;
 	}
 
 	/**
@@ -252,14 +267,14 @@ export class LocalConversionService {
 	}
 
 	/**
-	 * Check if a URL is likely an image URL
-	 * Returns false for known non-image embeds (YouTube, etc.)
+	 * Check if a URL should be considered for image conversion
+	 * Returns false for known non-image embed domains (YouTube, etc.)
+	 * This is a preliminary filter - actual image verification happens via HEAD request
 	 */
 	private isImageUrl(url: string): boolean {
 		try {
 			const parsed = new URL(url);
 			const hostname = parsed.hostname.toLowerCase();
-			const pathname = parsed.pathname.toLowerCase();
 
 			// Exclude known non-image embed domains
 			const nonImageDomains = [
@@ -281,24 +296,33 @@ export class LocalConversionService {
 				return false;
 			}
 
-			// Check for image file extensions in the path
-			const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico', '.tiff', '.tif'];
-			const hasImageExtension = imageExtensions.some(ext => pathname.endsWith(ext));
-
-			// Check for image extensions in query parameters (some CDNs use this)
-			const searchParams = parsed.searchParams.toString().toLowerCase();
-			const hasImageInQuery = imageExtensions.some(ext => searchParams.includes(ext));
-
-			// Only process if it has an image extension
-			// This is conservative - we only process URLs that clearly look like images
-			return hasImageExtension || hasImageInQuery;
+			// Allow all other external URLs - we'll verify with HEAD request
+			return true;
 		} catch {
 			return false;
 		}
 	}
 
 	/**
+	 * Verify if a URL actually serves an image by checking Content-Type header
+	 * Uses HEAD request to avoid downloading non-image content
+	 */
+	private async verifyImageUrl(url: string): Promise<boolean> {
+		try {
+			const response = await requestUrl({ url, method: 'HEAD' });
+			const contentType = response.headers['content-type']?.toLowerCase() ?? '';
+			
+			// Check if Content-Type starts with 'image/'
+			return contentType.startsWith('image/');
+		} catch {
+			// On error (network issues, CORS, etc.), return false to skip this URL
+			return false;
+		}
+	}
+
+	/**
 	 * Download an image and save it locally
+	 * Includes Content-Type validation as a safety net
 	 */
 	private async downloadAndSave(url: string, sourceFile: TFile): Promise<string | null> {
 		try {
@@ -307,7 +331,15 @@ export class LocalConversionService {
 				throw new Error(`HTTP ${response.status}`);
 			}
 
-			const contentType = response.headers['content-type'] ?? 'image/png';
+			const contentType = response.headers['content-type'] ?? '';
+			
+			// Safety net: verify Content-Type is actually an image
+			// This provides defense in depth in case HEAD request was bypassed or Content-Type changed
+			if (!contentType.toLowerCase().startsWith('image/')) {
+				console.warn(`Skipping ${url}: Content-Type is ${contentType}, not an image`);
+				return null;
+			}
+
 			const extension = this.storageManager.getExtensionFromMimeType(contentType);
 			const arrayBuffer = response.arrayBuffer;
 

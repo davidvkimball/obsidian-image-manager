@@ -25,11 +25,13 @@ export class DescriptiveImageModal extends Modal {
 	constructor(
 		app: App,
 		imageFile: TFile,
-		onSubmit: (result: DescriptiveImageResult) => void
+		onSubmit: (result: DescriptiveImageResult) => void,
+		suggestedDescription?: string
 	) {
 		super(app);
 		this.imageFile = imageFile;
 		this.onSubmit = onSubmit;
+		this.description = suggestedDescription ?? '';
 	}
 
 	onOpen(): void {
@@ -92,6 +94,11 @@ export class DescriptiveImageModal extends Modal {
 					.setButtonText('Cancel')
 					.onClick(() => this.cancel());
 			});
+
+		// Update preview if we have a suggested description
+		if (this.description) {
+			this.updatePreview();
+		}
 
 		// Focus input
 		setTimeout(() => {
@@ -197,10 +204,11 @@ export class DescriptiveImageModal extends Modal {
  */
 export function openDescriptiveImageModal(
 	app: App,
-	imageFile: TFile
+	imageFile: TFile,
+	suggestedDescription?: string
 ): Promise<DescriptiveImageResult> {
 	return new Promise((resolve) => {
-		const modal = new DescriptiveImageModal(app, imageFile, resolve);
+		const modal = new DescriptiveImageModal(app, imageFile, resolve, suggestedDescription);
 		modal.open();
 	});
 }
