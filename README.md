@@ -4,6 +4,10 @@ Insert, rename, and sort images within your notes.
 
 Image Manager unifies functionality from multiple image-related plugins into one cohesive experience, providing comprehensive image management for your Obsidian vault.
 
+## Made for Vault CMS
+
+Part of the [Vault CMS](https://github.com/davidvkimball/vault-cms) project.
+
 ## Features
 
 ### Image Insertion
