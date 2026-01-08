@@ -248,8 +248,10 @@ export interface ImageManagerSettings {
 	// Image Services
 	defaultProvider: ImageProvider;
 	unsplashProxyServer: string;
-	pexelsApiKey: string;
-	pixabayApiKey: string;
+	pexelsApiKey: string; // Plaintext API key (backward compatibility, fallback)
+	pexelsApiKeySecretId: string; // Secret ID for SecretStorage (1.11.4+)
+	pixabayApiKey: string; // Plaintext API key (backward compatibility, fallback)
+	pixabayApiKeySecretId: string; // Secret ID for SecretStorage (1.11.4+)
 	defaultOrientation: ImageOrientation;
 	defaultImageSize: ImageSize;
 	
@@ -301,7 +303,9 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	defaultProvider: ImageProvider.Unsplash,
 	unsplashProxyServer: '',
 	pexelsApiKey: '',
+	pexelsApiKeySecretId: '',
 	pixabayApiKey: '',
+	pixabayApiKeySecretId: '',
 	defaultOrientation: ImageOrientation.Any,
 	defaultImageSize: ImageSize.Large,
 	

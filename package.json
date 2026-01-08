@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-image-manager",
-	"version": "0.1.8",
-	"description": "Insert, rename, and sort external images by transforming them into local files within your notes.",
+	"version": "0.1.9",
+	"description": "Insert, rename, and sort images within your notes.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {

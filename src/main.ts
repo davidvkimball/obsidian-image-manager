@@ -3,7 +3,7 @@
  * Insert, rename, and sort external images by transforming them into local files
  */
 
-import { Editor, MarkdownView, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
+import { Editor, MarkdownView, Notice, Plugin, requireApiVersion, TFile, WorkspaceLeaf } from 'obsidian';
 import { DEFAULT_SETTINGS, ImageManagerSettings, ImageManagerSettingTab } from './settings';
 import { StorageManager } from './services/StorageManager';
 import { ImageProcessor } from './services/ImageProcessor';
@@ -31,6 +31,9 @@ export default class ImageManagerPlugin extends Plugin {
 	async onload(): Promise<void> {
 		await this.loadSettings();
 
+		// Migrate API keys to secrets if available (one-time migration)
+		await this.migrateApiKeysToSecrets();
+
 		// Initialize services
 		this.initializeServices();
 
@@ -54,11 +57,60 @@ export default class ImageManagerPlugin extends Plugin {
 	}
 
 	/**
+	 * Migrate API keys from plaintext to SecretStorage (one-time migration for 1.11.4+)
+	 * Only runs if Secrets API is available and secret IDs are not already set
+	 */
+	private async migrateApiKeysToSecrets(): Promise<void> {
+		// Only migrate if Secrets API is available
+		if (!requireApiVersion('1.11.4')) {
+			return;
+		}
+
+		let migrated = false;
+
+		// Access secretStorage via type assertion (may not be in type definitions)
+		const secretStorage = (this.app as unknown as { secretStorage?: { setSecret(id: string, secret: string): void } }).secretStorage;
+		if (!secretStorage) {
+			return;
+		}
+
+		// Migrate Pexels API key
+		if (!this.settings.pexelsApiKeySecretId && this.settings.pexelsApiKey) {
+			const secretId = 'image-manager-pexels-api-key';
+			try {
+				secretStorage.setSecret(secretId, this.settings.pexelsApiKey);
+				this.settings.pexelsApiKeySecretId = secretId;
+				migrated = true;
+			} catch (error) {
+				console.error('Failed to migrate Pexels API key to SecretStorage:', error);
+			}
+		}
+
+		// Migrate Pixabay API key
+		if (!this.settings.pixabayApiKeySecretId && this.settings.pixabayApiKey) {
+			const secretId = 'image-manager-pixabay-api-key';
+			try {
+				secretStorage.setSecret(secretId, this.settings.pixabayApiKey);
+				this.settings.pixabayApiKeySecretId = secretId;
+				migrated = true;
+			} catch (error) {
+				console.error('Failed to migrate Pixabay API key to SecretStorage:', error);
+			}
+		}
+
+		// Save settings if migration occurred
+		if (migrated) {
+			await this.saveSettings();
+			this.log('Migrated API keys to SecretStorage');
+		}
+	}
+
+	/**
 	 * Initialize all services
 	 */
 	private initializeServices(): void {
 		this.storageManager = new StorageManager(this.app, this.settings);
-		this.remoteService = new RemoteImageService(this.settings);
+		this.remoteService = new RemoteImageService(this.app, this.settings);
 		this.imageProcessor = new ImageProcessor(this.app, this.settings, this.storageManager);
 		this.propertyHandler = new PropertyHandler(this.app, this.settings, this.storageManager, this.imageProcessor, this.remoteService);
 		this.pasteHandler = new PasteHandler(

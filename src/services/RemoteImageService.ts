@@ -3,7 +3,7 @@
  * API integrations for Unsplash, Pexels, and Pixabay
  */
 
-import { requestUrl } from 'obsidian';
+import { App, requestUrl, requireApiVersion } from 'obsidian';
 import { ImageManagerSettings, ImageProvider, ImageOrientation, RemoteImage, ImageSize } from '../types';
 
 // Unsplash proxy URL (built-in fallback) - matches Image Manager pattern
@@ -11,8 +11,10 @@ const UNSPLASH_PROXY = 'https://insert-unsplash-image.cloudy9101.com/';
 
 export class RemoteImageService {
 	private settings: ImageManagerSettings;
+	private app: App;
 
-	constructor(settings: ImageManagerSettings) {
+	constructor(app: App, settings: ImageManagerSettings) {
+		this.app = app;
 		this.settings = settings;
 	}
 
@@ -80,12 +82,53 @@ export class RemoteImageService {
 	}
 
 	/**
+	 * Get Pexels API key from SecretStorage or fall back to plaintext
+	 */
+	private getPexelsApiKey(): string | null {
+		// Try secret first if available (1.11.4+)
+		if (requireApiVersion('1.11.4') && this.settings.pexelsApiKeySecretId) {
+			// Access secretStorage via type assertion (may not be in type definitions)
+			const secretStorage = (this.app as unknown as { secretStorage?: { getSecret(id: string): string | null } }).secretStorage;
+			if (secretStorage) {
+				const secret = secretStorage.getSecret(this.settings.pexelsApiKeySecretId);
+				if (secret) {
+					return secret;
+				}
+			}
+		}
+		// Fall back to plaintext
+		return this.settings.pexelsApiKey || null;
+	}
+
+	/**
+	 * Get Pixabay API key from SecretStorage or fall back to plaintext
+	 */
+	private getPixabayApiKey(): string | null {
+		// Try secret first if available (1.11.4+)
+		if (requireApiVersion('1.11.4') && this.settings.pixabayApiKeySecretId) {
+			// Access secretStorage via type assertion (may not be in type definitions)
+			const secretStorage = (this.app as unknown as { secretStorage?: { getSecret(id: string): string | null } }).secretStorage;
+			if (secretStorage) {
+				const secret = secretStorage.getSecret(this.settings.pixabayApiKeySecretId);
+				if (secret) {
+					return secret;
+				}
+			}
+		}
+		// Fall back to plaintext
+		return this.settings.pixabayApiKey || null;
+	}
+
+	/**
 	 * Search Pexels
 	 */
 	private async searchPexels(query: string, page: number): Promise<RemoteImage[]> {
-		const apiKey = this.settings.pexelsApiKey;
+		const apiKey = this.getPexelsApiKey();
 		if (!apiKey) {
-			throw new Error('Pexels API key is required. Please configure it in settings.');
+			const errorMsg = requireApiVersion('1.11.4')
+				? 'Pexels API key is required. Please configure it in settings (use SecretStorage on Obsidian 1.11.4+ or enter plaintext on older versions).'
+				: 'Pexels API key is required. Please configure it in settings.';
+			throw new Error(errorMsg);
 		}
 
 		const orientation = this.mapOrientation(this.settings.defaultOrientation);
@@ -123,9 +166,12 @@ export class RemoteImageService {
 	 * Search Pixabay
 	 */
 	private async searchPixabay(query: string, page: number): Promise<RemoteImage[]> {
-		const apiKey = this.settings.pixabayApiKey;
+		const apiKey = this.getPixabayApiKey();
 		if (!apiKey) {
-			throw new Error('Pixabay API key is required. Please configure it in settings.');
+			const errorMsg = requireApiVersion('1.11.4')
+				? 'Pixabay API key is required. Please configure it in settings (use SecretStorage on Obsidian 1.11.4+ or enter plaintext on older versions).'
+				: 'Pixabay API key is required. Please configure it in settings.';
+			throw new Error(errorMsg);
 		}
 
 		const orientation = this.mapPixabayOrientation(this.settings.defaultOrientation);

@@ -3,7 +3,7 @@
  * Settings tab with SettingGroup compatibility for Obsidian 1.11.0+
  */
 
-import { App, Platform, PluginSettingTab } from 'obsidian';
+import { App, Platform, PluginSettingTab, requireApiVersion } from 'obsidian';
 import { createSettingsGroup } from './utils/settings-compat';
 import {
 	ImageManagerSettings,
@@ -228,33 +228,85 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		});
 
 		group.addSetting((setting) => {
-			setting
-				.setName('Pexels API key')
-				.setDesc('Get your API key from https://www.pexels.com/api/new/')
-				.addText((text) => {
-					text
-						.setPlaceholder('Pexels API key')
-						.setValue(this.plugin.settings.pexelsApiKey)
-						.onChange(async (value) => {
-							this.plugin.settings.pexelsApiKey = value;
+			setting.setName('Pexels API key');
+			
+			if (requireApiVersion('1.11.4')) {
+				// Use SecretComponent for newer versions
+				setting
+					.setDesc('Select a secret from secret storage containing your Pexels API key.')
+					.addComponent((el) => {
+						// Use dynamic require to access SecretComponent (may not be in type definitions)
+						// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef, @typescript-eslint/no-unsafe-assignment
+						const obsidian = require('obsidian');
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unnecessary-type-assertion
+						const SecretComponent = obsidian.SecretComponent as any;
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+						const component = new SecretComponent(this.app, el);
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+						component.setValue(this.plugin.settings.pexelsApiKeySecretId);
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+						component.onChange(async (value: string) => {
+							this.plugin.settings.pexelsApiKeySecretId = value;
 							await this.plugin.saveSettings();
 						});
-				});
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+						return component;
+					});
+			} else {
+				// Fall back to plaintext for older versions
+				setting
+					.setDesc('Get your API key from https://www.pexels.com/api/new/')
+					.addText((text) => {
+						text
+							.setPlaceholder('Pexels API key')
+							.setValue(this.plugin.settings.pexelsApiKey)
+							.onChange(async (value) => {
+								this.plugin.settings.pexelsApiKey = value;
+								await this.plugin.saveSettings();
+							});
+					});
+			}
 		});
 
 		group.addSetting((setting) => {
-			setting
-				.setName('Pixabay API key')
-				.setDesc('Get your API key from https://pixabay.com/api/docs/')
-				.addText((text) => {
-					text
-						.setPlaceholder('Pixabay API key')
-						.setValue(this.plugin.settings.pixabayApiKey)
-						.onChange(async (value) => {
-							this.plugin.settings.pixabayApiKey = value;
+			setting.setName('Pixabay API key');
+			
+			if (requireApiVersion('1.11.4')) {
+				// Use SecretComponent for newer versions
+				setting
+					.setDesc('Select a secret from secret storage containing your Pixabay API key.')
+					.addComponent((el) => {
+						// Use dynamic require to access SecretComponent (may not be in type definitions)
+						// eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef, @typescript-eslint/no-unsafe-assignment
+						const obsidian = require('obsidian');
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unnecessary-type-assertion
+						const SecretComponent = obsidian.SecretComponent as any;
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+						const component = new SecretComponent(this.app, el);
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+						component.setValue(this.plugin.settings.pixabayApiKeySecretId);
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+						component.onChange(async (value: string) => {
+							this.plugin.settings.pixabayApiKeySecretId = value;
 							await this.plugin.saveSettings();
 						});
-				});
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+						return component;
+					});
+			} else {
+				// Fall back to plaintext for older versions
+				setting
+					.setDesc('Get your API key from https://pixabay.com/api/docs/')
+					.addText((text) => {
+						text
+							.setPlaceholder('Pixabay API key')
+							.setValue(this.plugin.settings.pixabayApiKey)
+							.onChange(async (value) => {
+								this.plugin.settings.pixabayApiKey = value;
+								await this.plugin.saveSettings();
+							});
+					});
+			}
 		});
 
 		group.addSetting((setting) => {
