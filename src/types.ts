@@ -268,6 +268,7 @@ export interface ImageManagerSettings {
 	convertOnNoteSave: boolean;
 	
 	// Rename Options
+	showRenameDialog: boolean;
 	autoRename: boolean;
 	dupNumberDelimiter: string;
 	dupNumberAtStart: boolean;
@@ -322,6 +323,7 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	convertOnNoteSave: false,
 	
 	// Rename Options
+	showRenameDialog: true,
 	autoRename: false,
 	dupNumberDelimiter: '-',
 	dupNumberAtStart: false,

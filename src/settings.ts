@@ -72,34 +72,6 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 
 		group.addSetting((setting) => {
 			setting
-				.setName('Enable rename on paste')
-				.setDesc('Show rename dialog when pasting images')
-				.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.enableRenameOnPaste)
-						.onChange(async (value) => {
-							this.plugin.settings.enableRenameOnPaste = value;
-							await this.plugin.saveSettings();
-						});
-				});
-		});
-
-		group.addSetting((setting) => {
-			setting
-				.setName('Enable rename on drag and drop')
-				.setDesc('Show rename dialog when dropping images')
-				.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.enableRenameOnDrop)
-						.onChange(async (value) => {
-							this.plugin.settings.enableRenameOnDrop = value;
-							await this.plugin.saveSettings();
-						});
-				});
-		});
-
-		group.addSetting((setting) => {
-			setting
 				.setName('Image name template')
 				.setDesc('Template for generated image names. Variables: {{fileName}}, {{dirName}}, {{DATE:YYYY-MM-DD}}, {{TIME:HH-mm-ss}}')
 				.addText((text) => {
@@ -524,6 +496,51 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 
 	private renderRenameSettings(containerEl: HTMLElement): void {
 		const group = createSettingsGroup(containerEl, 'Rename options', 'image-manager');
+
+		group.addSetting((setting) => {
+			setting
+				.setName('Show image rename dialog automatically')
+				.setDesc('Handle and rename images when they are added to the vault via paste or drag and drop')
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.showRenameDialog)
+						.onChange(async (value) => {
+							this.plugin.settings.showRenameDialog = value;
+							await this.plugin.saveSettings();
+							this.refreshWithScrollPreserve(containerEl);
+						});
+				});
+		});
+
+		if (this.plugin.settings.showRenameDialog) {
+			group.addSetting((setting) => {
+				setting
+					.setName('Rename on paste')
+					.setDesc('Handle and rename images when pasting into the editor')
+					.addToggle((toggle) => {
+						toggle
+							.setValue(this.plugin.settings.enableRenameOnPaste)
+							.onChange(async (value) => {
+								this.plugin.settings.enableRenameOnPaste = value;
+								await this.plugin.saveSettings();
+							});
+					});
+			});
+
+			group.addSetting((setting) => {
+				setting
+					.setName('Rename on drag and drop')
+					.setDesc('Handle and rename images when dropping into the editor')
+					.addToggle((toggle) => {
+						toggle
+							.setValue(this.plugin.settings.enableRenameOnDrop)
+							.onChange(async (value) => {
+								this.plugin.settings.enableRenameOnDrop = value;
+								await this.plugin.saveSettings();
+							});
+					});
+			});
+		}
 
 		group.addSetting((setting) => {
 			setting

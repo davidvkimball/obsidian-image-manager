@@ -209,6 +209,18 @@ export default class ImageManagerPlugin extends Plugin {
 		// Metadata change handler for banner updates
 		this.registerEvent(
 			this.app.metadataCache.on('changed', (file: TFile) => {
+				// Auto-conversion on save (metadata change)
+				if (this.settings.autoConvertRemoteImages && this.settings.convertOnNoteSave) {
+					if (this.settings.supportedExtensions.includes(file.extension)) {
+						void (async () => {
+							const count = await this.conversionService.processFile(file);
+							if (count > 0) {
+								new Notice(`Converted ${count} remote image(s) to local`);
+							}
+						})();
+					}
+				}
+
 				const deviceSettings = this.bannerService.getDeviceSettings();
 				// Also allow 'md' as a fallback in case user didn't include it in supportedExtensions
 				if (!deviceSettings.enabled || (!this.settings.supportedExtensions.includes(file.extension) && file.extension !== 'md')) {

@@ -42,7 +42,7 @@ export class PasteHandler {
 		editor: Editor,
 		view: MarkdownView
 	): Promise<boolean> {
-		if (!this.settings.enableRenameOnPaste) {
+		if (!this.settings.showRenameDialog || !this.settings.enableRenameOnPaste) {
 			return false; // Let Obsidian handle it
 		}
 
@@ -104,7 +104,7 @@ export class PasteHandler {
 	 * This is registered via document paste event with property detection
 	 */
 	async handlePropertyPaste(evt: ClipboardEvent): Promise<boolean> {
-		if (!this.settings.enablePropertyPaste) {
+		if (!this.settings.showRenameDialog || !this.settings.enablePropertyPaste) {
 			return false;
 		}
 
@@ -339,7 +339,7 @@ export class DropHandler {
 		editor: Editor,
 		view: MarkdownView
 	): Promise<boolean> {
-		if (!this.settings.enableRenameOnDrop) {
+		if (!this.settings.showRenameDialog || !this.settings.enableRenameOnDrop) {
 			return false;
 		}
 
