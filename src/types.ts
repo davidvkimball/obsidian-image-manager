@@ -89,6 +89,7 @@ export interface BannerDeviceSettings {
 	height: number;
 	viewOffset: number;
 	noteOffset: number;
+	bannerRadiusEnabled: boolean;
 	borderRadius: [number, number, number, number];
 	padding: number;
 	fade: boolean;
@@ -162,7 +163,8 @@ export const DEFAULT_BANNER_DEVICE_SETTINGS: Record<DeviceType, BannerDeviceSett
 		height: 240,
 		viewOffset: 0,
 		noteOffset: -32,
-		borderRadius: [0, 0, 0, 0],
+		bannerRadiusEnabled: false,
+		borderRadius: [8, 8, 8, 8],
 		padding: 8,
 		fade: true,
 		animation: false,
@@ -182,7 +184,8 @@ export const DEFAULT_BANNER_DEVICE_SETTINGS: Record<DeviceType, BannerDeviceSett
 		height: 190,
 		viewOffset: 0,
 		noteOffset: -32,
-		borderRadius: [0, 0, 0, 0],
+		bannerRadiusEnabled: false,
+		borderRadius: [8, 8, 8, 8],
 		padding: 8,
 		fade: true,
 		animation: false,
@@ -202,7 +205,8 @@ export const DEFAULT_BANNER_DEVICE_SETTINGS: Record<DeviceType, BannerDeviceSett
 		height: 160,
 		viewOffset: 0,
 		noteOffset: -32,
-		borderRadius: [0, 0, 0, 0],
+		bannerRadiusEnabled: false,
+		borderRadius: [8, 8, 8, 8],
 		padding: 8,
 		fade: true,
 		animation: false,

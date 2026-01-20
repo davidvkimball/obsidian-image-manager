@@ -778,6 +778,21 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				});
 		});
 
+		// Rounded corners
+		group.addSetting((setting) => {
+			setting
+				.setName('Rounded corners')
+				.setDesc('Enable rounded corners for the banner')
+				.addToggle((toggle) => {
+					toggle
+						.setValue(deviceSettings.bannerRadiusEnabled)
+						.onChange(async (value) => {
+							this.plugin.settings.banner[currentDevice].bannerRadiusEnabled = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		});
+
 		// Animation
 		group.addSetting((setting) => {
 			setting
@@ -847,7 +862,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 					.setDesc('Name of the property that, when set to true, will hide the banner for that note')
 					.addText((text) => {
 						text
-							.setPlaceholder('Hide banner')
+							.setPlaceholder('hideBanner')
 							.setValue(propertySettings.hideProperty)
 							.onChange(async (value) => {
 								this.plugin.settings.banner.properties.hideProperty = value || '';

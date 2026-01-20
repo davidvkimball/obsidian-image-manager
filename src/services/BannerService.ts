@@ -44,6 +44,7 @@ import { getFrontmatter } from '../utils/mdx-frontmatter';
 // CSS class names
 const CSS_CLASSES = {
 	Main: 'image-manager-banner',
+	Content: 'banner-content',
 	Icon: 'banner-icon',
 	Static: 'static',
 } as const;
@@ -101,7 +102,7 @@ export class BannerService {
 	/**
 	 * Process all open markdown views
 	 */
-	processAll(): void {
+	processAll(force: boolean = false): void {
 		const deviceSettings = this.getDeviceSettings();
 		
 		this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
@@ -109,7 +110,7 @@ export class BannerService {
 			if (view instanceof MarkdownView) {
 				if (deviceSettings.enabled) {
 					const file = view?.file || null;
-					void this.process(file, view);
+					void this.process(file, view, force);
 				} else {
 					this.remove(view);
 				}
@@ -120,11 +121,16 @@ export class BannerService {
 	/**
 	 * Process a single file/view
 	 */
-	async process(file: TFile | null, view?: MarkdownView): Promise<void> {
+	async process(file: TFile | null, view?: MarkdownView, force: boolean = false): Promise<void> {
 		const data = await this.compute(file, view);
 		if (!data) {
 			return;
 		}
+
+		if (force) {
+			data.needsUpdate = true;
+		}
+
 		if (!data.image) {
 			this.remove(view, data);
 			return;
@@ -135,7 +141,7 @@ export class BannerService {
 		
 		const deviceSettings = this.getDeviceSettings();
 		if (deviceSettings.enabled) {
-			await this.render(data, view);
+			await this.render(data, view, force);
 		}
 	}
 
@@ -269,7 +275,7 @@ export class BannerService {
 	/**
 	 * Render banner in the view
 	 */
-	async render(data: BannerData, targetView?: MarkdownView): Promise<void> {
+	async render(data: BannerData, targetView?: MarkdownView, force: boolean = false): Promise<void> {
 		const { image, viewMode, lastViewMode, needsUpdate, isImageChange } = data;
 		const view = targetView || this.getActiveView();
 		
@@ -278,7 +284,7 @@ export class BannerService {
 		}
 
 		const container = view.containerEl;
-		if (!container || (!needsUpdate && lastViewMode === viewMode)) {
+		if (!container || (!force && !needsUpdate && lastViewMode === viewMode)) {
 			return;
 		}
 
@@ -293,16 +299,13 @@ export class BannerService {
 		const imageOptions = await this.parseLink(image || '', view);
 		const banners = this.updateBannerElements(data, imageOptions, containers);
 
-		// Update icon if enabled
-		const deviceSettings = this.getDeviceSettings();
-		if (deviceSettings.iconEnabled && data.icon) {
-			await this.updateIcons(data, banners, view);
-		}
+		// Update icon
+		await this.updateIcons(data, banners, view);
 
-		if (!isImageChange) {
-			this.replaceBanners(banners);
-		} else {
+		if (isImageChange) {
 			this.injectBanners(banners, containers);
+		} else {
+			this.replaceBanners(banners);
 		}
 
 		data.lastViewMode = viewMode;
@@ -333,12 +336,20 @@ export class BannerService {
 				element = document.createElement('div');
 				element.classList.add(CSS_CLASSES.Main);
 			}
+
+			let content = element.querySelector(`.${CSS_CLASSES.Content}`) as HTMLElement;
+			if (!content) {
+				content = document.createElement('div');
+				content.classList.add(CSS_CLASSES.Content);
+				element.appendChild(content);
+			}
+
 			banners.push(element);
 
 			if (isImageChange || isImagePropsUpdate) {
 				if (isImageChange) {
 					element.classList.remove(CSS_CLASSES.Static);
-					element.firstChild?.remove();
+					content.firstChild?.remove();
 				}
 
 				// Use setCssProperties for dynamic styles
@@ -357,7 +368,7 @@ export class BannerService {
 					video.muted = true;
 					video.loop = true;
 					video.src = imgOptions.url.replace(/^"|"$/g, '');
-					element.appendChild(video);
+					content.appendChild(video);
 				} else {
 					cssVars['--im-banner-url'] = `url(${imgOptions.url})`;
 				}
@@ -495,7 +506,7 @@ export class BannerService {
 		const height = deviceSettings.height;
 		const noteOffset = deviceSettings.noteOffset;
 		const viewOffset = deviceSettings.viewOffset;
-		const radius = deviceSettings.borderRadius;
+		const radius = deviceSettings.bannerRadiusEnabled ? deviceSettings.borderRadius : [0, 0, 0, 0];
 		const padding = deviceSettings.padding;
 		const fade = deviceSettings.fade;
 
@@ -524,7 +535,7 @@ export class BannerService {
 
 		setCssProperties(document.body, cssVars);
 
-		this.processAll();
+		this.processAll(true);
 	}
 
 	/**
