@@ -544,6 +544,20 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 
 		group.addSetting((setting) => {
 			setting
+				.setName('Process background file changes')
+				.setDesc('Automatically convert and rename remote images when files are changed in the background (by Git or other plugins). Warning: Turning this on may cause the rename modal to appear for images you\'ve already processed on other devices during a sync.')
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.processBackgroundChanges)
+						.onChange(async (value) => {
+							this.plugin.settings.processBackgroundChanges = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		});
+
+		group.addSetting((setting) => {
+			setting
 				.setName('Descriptive images')
 				.setDesc('Ask for image description, use as display text and kebab-case for filename (applies to note body insertions only, not properties)')
 				.addToggle((toggle) => {

@@ -17,7 +17,7 @@ export class DescriptiveImageModal extends Modal {
 	private description: string = '';
 	private onSubmit: (result: DescriptiveImageResult) => void;
 
-	private descriptionInput: HTMLTextAreaElement | null = null;
+	private descriptionInput: HTMLInputElement | null = null;
 	private previewEl: HTMLElement | null = null;
 	private fileNamePreviewEl: HTMLElement | null = null;
 	private errorEl: HTMLElement | null = null;
@@ -47,7 +47,7 @@ export class DescriptiveImageModal extends Modal {
 		new Setting(contentEl)
 			.setName('Image description')
 			.setDesc('Describe this image. This will be used as display text and for the filename.')
-			.addTextArea((text) => {
+			.addText((text) => {
 				this.descriptionInput = text.inputEl;
 				text
 					.setPlaceholder('A beautiful sunset over mountains')
@@ -59,7 +59,7 @@ export class DescriptiveImageModal extends Modal {
 
 				// Handle enter key (submit)
 				text.inputEl.addEventListener('keydown', (e: KeyboardEvent) => {
-					if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !e.isComposing) {
+					if (e.key === 'Enter' && !e.isComposing) {
 						e.preventDefault();
 						this.submit();
 					}

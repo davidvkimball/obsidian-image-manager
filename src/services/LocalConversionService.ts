@@ -37,14 +37,16 @@ export class LocalConversionService {
 
 	/**
 	 * Process a file to convert all remote images to local
+	 * @param file - The file to process
+	 * @param isBackground - If true, skip conversion if user interaction (modal) would be required
 	 */
-	async processFile(file: TFile): Promise<number> {
+	async processFile(file: TFile, isBackground: boolean = false): Promise<number> {
 		if (!isMarkdownFile(file)) {
 			return 0;
 		}
 
 		const content = await this.app.vault.read(file);
-		const { newContent, count } = await this.processContent(content, file);
+		const { newContent, count } = await this.processContent(content, file, isBackground);
 
 		if (count > 0) {
 			await this.app.vault.modify(file, newContent);
@@ -58,7 +60,8 @@ export class LocalConversionService {
 	 */
 	private async processContent(
 		content: string,
-		sourceFile: TFile
+		sourceFile: TFile,
+		isBackground: boolean = false
 	): Promise<{ newContent: string; count: number }> {
 		let newContent = content;
 		let count = 0;
@@ -68,6 +71,14 @@ export class LocalConversionService {
 
 		for (const image of externalImages) {
 			try {
+				// If background and modals are required but not allowed, skip this image
+				// Note: autoRename setting is handled within renameImageFile, 
+				// but we check it here to avoid downloading if we're going to skip anyway
+				if (isBackground && !this.settings.autoRename) {
+					// Skip conversion to avoid showing a modal in the background
+					continue;
+				}
+
 				// Download and save temporarily
 				const tempPath = await this.downloadAndSave(image.url, sourceFile);
 				if (!tempPath) {

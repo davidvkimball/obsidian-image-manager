@@ -167,11 +167,17 @@ export default class ImageManagerPlugin extends Plugin {
 						void (async () => {
 							// Small delay to let file fully load
 							await new Promise(resolve => setTimeout(resolve, 500));
-							const count = await this.conversionService.processFile(file);
-							if (count > 0) {
-								new Notice(`Converted ${count} remote image(s) to local`);
-								// Refresh the view to show updated content
-								// The file modification will trigger Obsidian's UI refresh automatically
+							
+							// Check if this is the active file
+							const activeFile = this.app.workspace.getActiveFile();
+							const isActiveFile = activeFile && activeFile.path === file.path;
+							
+							// Only process if it's the active file OR background processing is enabled
+							if (isActiveFile || this.settings.processBackgroundChanges) {
+								const count = await this.conversionService.processFile(file, !isActiveFile);
+								if (count > 0) {
+									new Notice(`Converted ${count} remote image(s) to local`);
+								}
 							}
 						})();
 					}
@@ -213,9 +219,16 @@ export default class ImageManagerPlugin extends Plugin {
 				if (this.settings.autoConvertRemoteImages && this.settings.convertOnNoteSave) {
 					if (this.settings.supportedExtensions.includes(file.extension)) {
 						void (async () => {
-							const count = await this.conversionService.processFile(file);
-							if (count > 0) {
-								new Notice(`Converted ${count} remote image(s) to local`);
+							// Check if this is the active file
+							const activeFile = this.app.workspace.getActiveFile();
+							const isActiveFile = activeFile && activeFile.path === file.path;
+							
+							// Only process if it's the active file OR background processing is enabled
+							if (isActiveFile || this.settings.processBackgroundChanges) {
+								const count = await this.conversionService.processFile(file, !isActiveFile);
+								if (count > 0) {
+									new Notice(`Converted ${count} remote image(s) to local`);
+								}
 							}
 						})();
 					}

@@ -266,6 +266,7 @@ export interface ImageManagerSettings {
 	autoConvertRemoteImages: boolean;
 	convertOnNoteOpen: boolean;
 	convertOnNoteSave: boolean;
+	processBackgroundChanges: boolean;
 	
 	// Rename Options
 	showRenameDialog: boolean;
@@ -321,6 +322,7 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	autoConvertRemoteImages: false,
 	convertOnNoteOpen: false,
 	convertOnNoteSave: false,
+	processBackgroundChanges: true,
 	
 	// Rename Options
 	showRenameDialog: true,
