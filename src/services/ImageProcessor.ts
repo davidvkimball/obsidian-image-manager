@@ -45,8 +45,8 @@ export class ImageProcessor {
 			const arrayBuffer = await file.arrayBuffer();
 			const extension = this.getExtension(file);
 
-			// Generate suggested name from template
-			const suggestedName = this.generateSuggestedName(activeFile);
+			// Generate suggested name from template (no suffix for local files)
+			const suggestedName = this.generateNameWithSuffix(activeFile);
 
 			// Get the name to use
 			let finalName = suggestedName;
@@ -65,7 +65,7 @@ export class ImageProcessor {
 
 				// Show descriptive image modal if enabled, otherwise show rename modal
 				if (this.settings.enableDescriptiveImages) {
-					const descResult = await openDescriptiveImageModal(this.app, tempFile);
+					const descResult = await openDescriptiveImageModal(this.app, tempFile, suggestedName);
 					
 					if (descResult.cancelled) {
 						// User cancelled - delete temp file and return
@@ -183,8 +183,8 @@ export class ImageProcessor {
 			const contentType = response.headers['content-type'] ?? 'image/png';
 			const extension = this.storageManager.getExtensionFromMimeType(contentType);
 
-			// Generate suggested name (use override if provided, otherwise generate from template)
-			const suggestedName = suggestedNameOverride ?? this.generateSuggestedName(activeFile);
+			// Generate suggested name (use override if provided as suffix, otherwise generate from template)
+			const suggestedName = this.generateNameWithSuffix(activeFile, suggestedNameOverride);
 
 			// Get final name
 			let finalName = suggestedName;
@@ -295,19 +295,31 @@ export class ImageProcessor {
 	}
 
 	/**
-	 * Generate a suggested name based on the template
+	 * Generate a suggested name based on the template and optional suffix
 	 */
-	generateSuggestedName(activeFile: TFile): string {
+	generateNameWithSuffix(activeFile: TFile, suffix?: string): string {
 		const variables = buildTemplateVariables(this.app, activeFile);
 		const rendered = renderTemplate(this.settings.imageNameTemplate, variables);
 
-		// Check if the result is meaningful
-		if (isTemplateMeaningful(rendered, this.settings.dupNumberDelimiter)) {
-			return this.storageManager.sanitizeFileName(rendered);
+		const isMeaningful = isTemplateMeaningful(rendered, this.settings.dupNumberDelimiter);
+		const base = isMeaningful ? rendered : '';
+
+		if (base && suffix) {
+			return `${base} - ${suffix}`;
+		} else if (base) {
+			return `${base} - `;
+		} else if (suffix) {
+			return suffix;
 		}
 
-		// Fallback to file name
-		return activeFile.basename;
+		return '';
+	}
+
+	/**
+	 * Generate a suggested name based on the template
+	 */
+	generateSuggestedName(activeFile: TFile): string {
+		return this.generateNameWithSuffix(activeFile);
 	}
 
 	/**

@@ -297,7 +297,7 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	// General Settings
 	enableRenameOnPaste: true,
 	enableRenameOnDrop: true,
-	imageNameTemplate: '{{fileName}}',
+	imageNameTemplate: '',
 	attachmentLocation: AttachmentLocation.ObsidianDefault,
 	customAttachmentPath: './assets',
 	
