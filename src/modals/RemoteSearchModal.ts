@@ -121,7 +121,7 @@ export class RemoteSearchModal extends Modal {
 		// Debounced search
 		const debouncedSearch = debounce((query: string) => {
 			if (query.trim()) {
-				void this.performSearch(query);
+				void this.performSearch(query, true);
 			} else {
 				this.clearResults();
 			}
@@ -140,7 +140,7 @@ export class RemoteSearchModal extends Modal {
 				e.preventDefault();
 				const query = this.queryInput?.value.trim() || '';
 				if (query) {
-					void this.performSearch(query);
+					void this.performSearch(query, true);
 				} else if (this.currentResults.length > 0 && this.selectedImage < this.currentResults.length) {
 					// Insert selected image on Enter
 					const image = this.currentResults[this.selectedImage];
@@ -166,10 +166,9 @@ export class RemoteSearchModal extends Modal {
 		// Provider change
 		this.providerSelect?.addEventListener('change', (e) => {
 			this.currentProvider = (e.target as HTMLSelectElement).value as ImageProvider;
-			this.currentPage = 1;
 			if (this.currentQuery) {
 				this.showLoading(true);
-				void this.performSearch(this.currentQuery);
+				void this.performSearch(this.currentQuery, true);
 			}
 		});
 
@@ -180,16 +179,18 @@ export class RemoteSearchModal extends Modal {
 			// Re-search if we have a query
 			if (this.currentQuery) {
 				this.showLoading(true);
-				void this.performSearch(this.currentQuery);
+				void this.performSearch(this.currentQuery, true);
 			}
 		});
 	}
 
-	private async performSearch(query: string): Promise<void> {
+	private async performSearch(query: string, resetPage: boolean = false): Promise<void> {
 		if (this.isLoading) return;
 
 		this.currentQuery = query;
-		this.currentPage = 1;
+		if (resetPage) {
+			this.currentPage = 1;
+		}
 		this.isLoading = true;
 		this.showLoading(true);
 

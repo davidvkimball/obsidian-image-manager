@@ -23,7 +23,7 @@ import type ImageManagerPlugin from './main';
  * SecretComponent is not available in type definitions for all Obsidian versions
  */
 interface SecretComponentType {
-	new (app: App, el: HTMLElement): BaseComponent & {
+	new(app: App, el: HTMLElement): BaseComponent & {
 		setValue(value: string): void;
 		onChange(callback: (value: string) => void): void;
 	};
@@ -34,6 +34,7 @@ export type { ImageManagerSettings };
 
 export class ImageManagerSettingTab extends PluginSettingTab {
 	plugin: ImageManagerPlugin;
+	public icon = 'lucide-image-down';
 
 	constructor(app: App, plugin: ImageManagerPlugin) {
 		super(app, plugin);
@@ -99,15 +100,15 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 						.onChange(async (value) => {
 							this.plugin.settings.attachmentLocation = value as AttachmentLocation;
 							await this.plugin.saveSettings();
-							
+
 							// Preserve scroll position when re-rendering
-							const scrollContainer = containerEl.closest('.vertical-tab-content') || 
-								containerEl.closest('.settings-content') || 
+							const scrollContainer = containerEl.closest('.vertical-tab-content') ||
+								containerEl.closest('.settings-content') ||
 								containerEl.parentElement;
 							const scrollTop = scrollContainer?.scrollTop || 0;
-							
+
 							this.display(); // Refresh to show/hide path input
-							
+
 							// Restore scroll position after rendering
 							requestAnimationFrame(() => {
 								if (scrollContainer) {
@@ -212,7 +213,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 
 		group.addSetting((setting) => {
 			setting.setName('Pexels API key');
-			
+
 			if (requireApiVersion('1.11.4')) {
 				// Use SecretComponent for newer versions
 				setting
@@ -250,7 +251,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 
 		group.addSetting((setting) => {
 			setting.setName('Pixabay API key');
-			
+
 			if (requireApiVersion('1.11.4')) {
 				// Use SecretComponent for newer versions
 				setting
@@ -363,15 +364,15 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 						.onChange(async (value) => {
 							this.plugin.settings.propertyLinkFormat = value as PropertyLinkFormat;
 							await this.plugin.saveSettings();
-							
+
 							// Preserve scroll position when re-rendering
-							const scrollContainer = containerEl.closest('.vertical-tab-content') || 
-								containerEl.closest('.settings-content') || 
+							const scrollContainer = containerEl.closest('.vertical-tab-content') ||
+								containerEl.closest('.settings-content') ||
 								containerEl.parentElement;
 							const scrollTop = scrollContainer?.scrollTop || 0;
-							
+
 							this.display(); // Refresh to show/hide custom format input
-							
+
 							// Restore scroll position after rendering
 							requestAnimationFrame(() => {
 								if (scrollContainer) {
@@ -406,7 +407,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.setDesc('Default property name when inserting to properties via command')
 				.addText((text) => {
 					text
-					.setPlaceholder('Banner')
+						.setPlaceholder('Banner')
 						.setValue(this.plugin.settings.defaultPropertyName)
 						.onChange(async (value) => {
 							this.plugin.settings.defaultPropertyName = value;
@@ -444,15 +445,15 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 						.onChange(async (value) => {
 							this.plugin.settings.autoConvertRemoteImages = value;
 							await this.plugin.saveSettings();
-							
+
 							// Preserve scroll position when re-rendering
-							const scrollContainer = containerEl.closest('.vertical-tab-content') || 
-								containerEl.closest('.settings-content') || 
+							const scrollContainer = containerEl.closest('.vertical-tab-content') ||
+								containerEl.closest('.settings-content') ||
 								containerEl.parentElement;
 							const scrollTop = scrollContainer?.scrollTop || 0;
-							
+
 							this.display(); // Refresh to show/hide sub-options
-							
+
 							// Restore scroll position after rendering
 							requestAnimationFrame(() => {
 								if (scrollContainer) {
@@ -1041,9 +1042,9 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.addToggle((toggle) => {
 					toggle
 						.setValue(this.plugin.settings.debugMode)
-				.onChange(async (value) => {
+						.onChange(async (value) => {
 							this.plugin.settings.debugMode = value;
-					await this.plugin.saveSettings();
+							await this.plugin.saveSettings();
 						});
 				});
 		});
