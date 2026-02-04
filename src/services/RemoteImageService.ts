@@ -13,9 +13,14 @@ export class RemoteImageService {
 	private settings: ImageManagerSettings;
 	private app: App;
 
-	constructor(app: App, settings: ImageManagerSettings) {
+	constructor(app: App, settings: ImageManagerSettings, observable?: { subscribe(fn: (settings: ImageManagerSettings) => void): void }) {
 		this.app = app;
 		this.settings = settings;
+
+		// Subscribe to settings updates if observable is provided
+		observable?.subscribe((newSettings) => {
+			this.updateSettings(newSettings);
+		});
 	}
 
 	/**
@@ -53,7 +58,7 @@ export class RemoteImageService {
 			proxyUrl += '/';
 		}
 		const orientation = this.mapOrientation(this.settings.defaultOrientation);
-		
+
 		// Use URL constructor pattern
 		const url = new URL('/search/photos', proxyUrl);
 		url.searchParams.set('query', query);
@@ -132,7 +137,7 @@ export class RemoteImageService {
 		}
 
 		const orientation = this.mapOrientation(this.settings.defaultOrientation);
-		
+
 		const params = new URLSearchParams({
 			query,
 			page: String(page),
@@ -226,7 +231,7 @@ export class RemoteImageService {
 	async downloadImage(image: RemoteImage): Promise<ArrayBuffer> {
 		const url = this.getDownloadUrl(image);
 		const response = await requestUrl({ url });
-		
+
 		if (response.status >= 400) {
 			throw new Error(`Failed to download image: ${response.status}`);
 		}

@@ -17,12 +17,17 @@ export class PropertyHandler {
 	private imageProcessor: ImageProcessor;
 	private remoteService?: RemoteImageService;
 
-	constructor(app: App, settings: ImageManagerSettings, storageManager: StorageManager, imageProcessor: ImageProcessor, remoteService?: RemoteImageService) {
+	constructor(app: App, settings: ImageManagerSettings, storageManager: StorageManager, imageProcessor: ImageProcessor, remoteService?: RemoteImageService, observable?: { subscribe(fn: (settings: ImageManagerSettings) => void): void }) {
 		this.app = app;
 		this.settings = settings;
 		this.storageManager = storageManager;
 		this.imageProcessor = imageProcessor;
 		this.remoteService = remoteService;
+
+		// Subscribe to settings updates if observable is provided
+		observable?.subscribe((newSettings) => {
+			this.updateSettings(newSettings);
+		});
 	}
 
 	/**
@@ -92,7 +97,7 @@ export class PropertyHandler {
 		if (this.settings.propertyLinkFormat === PropertyLinkFormat.ObsidianDefault) {
 			// Use Obsidian's API which respects useMarkdownLinks, newLinkFormat, etc.
 			const generatedLink = this.app.fileManager.generateMarkdownLink(imageFile, noteFile.path);
-			
+
 			// Extract the link part for properties
 			// Obsidian may generate: ![[path]] or ![](path) or [[path]] or [](path)
 			if (generatedLink.startsWith('![') && generatedLink.includes(']]')) {

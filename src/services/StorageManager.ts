@@ -10,9 +10,14 @@ export class StorageManager {
 	private app: App;
 	private settings: ImageManagerSettings;
 
-	constructor(app: App, settings: ImageManagerSettings) {
+	constructor(app: App, settings: ImageManagerSettings, observable?: { subscribe(fn: (settings: ImageManagerSettings) => void): void }) {
 		this.app = app;
 		this.settings = settings;
+
+		// Subscribe to settings updates if observable is provided
+		observable?.subscribe((newSettings) => {
+			this.updateSettings(newSettings);
+		});
 	}
 
 	/**
@@ -68,7 +73,7 @@ export class StorageManager {
 			return normalizePath(attachmentFolderPath);
 		}
 	}
-	
+
 	/**
 	 * Join path segments
 	 */
@@ -123,7 +128,7 @@ export class StorageManager {
 	 */
 	async saveFile(data: ArrayBuffer, filePath: string): Promise<TFile> {
 		const normalizedPath = normalizePath(filePath);
-		
+
 		// Ensure parent folder exists
 		const lastSlash = normalizedPath.lastIndexOf('/');
 		const parentPath = lastSlash > 0 ? normalizedPath.slice(0, lastSlash) : '';
@@ -148,7 +153,7 @@ export class StorageManager {
 			// If it's an image but doesn't start with '!', add it
 			imageLink = `!${link}`;
 		}
-		
+
 		// Debug logging
 		if (this.settings.debugMode) {
 			console.debug('[Image Manager] generateMarkdownLink', {
@@ -159,7 +164,7 @@ export class StorageManager {
 				hasSize: !!(insertSize && insertSize.trim())
 			});
 		}
-		
+
 		// Handle size and display text
 		// For wikilinks: ![[path]] -> ![[path|size]] or ![[path|size|displayText]]
 		// For markdown: ![alt](path) -> ![alt|size](path) or ![displayText|size](path)
@@ -198,14 +203,14 @@ export class StorageManager {
 				imageLink = imageLink.replace(/\]\]$/, `|${parts.join('|')}]]`);
 			}
 		}
-		
+
 		// Debug logging
 		if (this.settings.debugMode) {
 			console.debug('[Image Manager] generateMarkdownLink result', {
 				finalLink: imageLink
 			});
 		}
-		
+
 		return imageLink;
 	}
 
@@ -284,7 +289,7 @@ export class StorageManager {
 			// Check if URL ends with common image extensions
 			const pathname = parsed.pathname.toLowerCase();
 			const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.tiff', '.avif'];
-			
+
 			// Also check for image-related query params or paths
 			if (imageExtensions.some(ext => pathname.endsWith(ext))) {
 				return true;

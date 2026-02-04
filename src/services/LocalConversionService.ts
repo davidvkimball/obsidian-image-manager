@@ -20,11 +20,16 @@ export class LocalConversionService {
 	private storageManager: StorageManager;
 	private imageProcessor: ImageProcessor;
 
-	constructor(app: App, settings: ImageManagerSettings, storageManager: StorageManager, imageProcessor: ImageProcessor) {
+	constructor(app: App, settings: ImageManagerSettings, storageManager: StorageManager, imageProcessor: ImageProcessor, observable?: { subscribe(fn: (settings: ImageManagerSettings) => void): void }) {
 		this.app = app;
 		this.settings = settings;
 		this.storageManager = storageManager;
 		this.imageProcessor = imageProcessor;
+
+		// Subscribe to settings updates if observable is provided
+		observable?.subscribe((newSettings) => {
+			this.updateSettings(newSettings);
+		});
 	}
 
 	/**
@@ -92,9 +97,9 @@ export class LocalConversionService {
 
 				// Show rename modal if enabled (always show for conversion, unless auto-rename is on)
 				let finalFile: TFile = tempFile;
-				
+
 				// Generate suggested name from alt text or URL
-				const suggestedName = image.alt 
+				const suggestedName = image.alt
 					? this.storageManager.sanitizeFileName(image.alt)
 					: tempFile.basename;
 
@@ -322,7 +327,7 @@ export class LocalConversionService {
 		try {
 			const response = await requestUrl({ url, method: 'HEAD' });
 			const contentType = response.headers['content-type']?.toLowerCase() ?? '';
-			
+
 			// Check if Content-Type starts with 'image/'
 			return contentType.startsWith('image/');
 		} catch {
@@ -343,7 +348,7 @@ export class LocalConversionService {
 			}
 
 			const contentType = response.headers['content-type'] ?? '';
-			
+
 			// Safety net: verify Content-Type is actually an image
 			// This provides defense in depth in case HEAD request was bypassed or Content-Type changed
 			if (!contentType.toLowerCase().startsWith('image/')) {

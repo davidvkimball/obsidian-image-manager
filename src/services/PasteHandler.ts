@@ -18,12 +18,18 @@ export class PasteHandler {
 		app: App,
 		settings: ImageManagerSettings,
 		imageProcessor: ImageProcessor,
-		propertyHandler: PropertyHandler
+		propertyHandler: PropertyHandler,
+		observable?: { subscribe(fn: (settings: ImageManagerSettings) => void): void }
 	) {
 		this.app = app;
 		this.settings = settings;
 		this.imageProcessor = imageProcessor;
 		this.propertyHandler = propertyHandler;
+
+		// Subscribe to settings updates if observable is provided
+		observable?.subscribe((newSettings) => {
+			this.updateSettings(newSettings);
+		});
 	}
 
 	/**
@@ -79,11 +85,11 @@ export class PasteHandler {
 			return true;
 		}
 
-			// Process each image
+		// Process each image
 		for (let i = 0; i < imageFiles.length; i++) {
 			const imageFile = imageFiles[i];
 			if (!imageFile) continue;
-			
+
 			const result = await this.imageProcessor.processImageFile(
 				imageFile,
 				activeFile,
@@ -182,23 +188,23 @@ export class PasteHandler {
 		if (result.success && result.file) {
 			// Get the formatted link value
 			const linkValue = this.propertyHandler.formatPropertyLink(result.file, activeFile);
-			
+
 			// Update the frontmatter property directly
 			await this.propertyHandler.setPropertyValue(
 				activeFile,
 				propertyName,
 				result.file
 			);
-			
+
 			// Wait for Obsidian to process the file change and update metadata cache
 			await new Promise(resolve => setTimeout(resolve, 300));
-			
+
 			// Try multiple approaches to update the UI
 			// Approach 1: Find and update the input field directly
 			const propertyEl = document.querySelector(
 				`.metadata-property[data-property-key="${propertyName}"]`
 			);
-			
+
 			if (this.settings.debugMode) {
 				console.debug('[Image Manager] Updating property UI', {
 					propertyName,
@@ -206,11 +212,11 @@ export class PasteHandler {
 					propertyElFound: !!propertyEl
 				});
 			}
-			
+
 			const inputEl = propertyEl?.querySelector(
 				'.metadata-input-longtext, .metadata-input-text, input.metadata-input, textarea.metadata-input'
 			) as HTMLElement | HTMLInputElement | HTMLTextAreaElement | null;
-			
+
 			if (inputEl) {
 				if (this.settings.debugMode) {
 					const currentValue = inputEl instanceof HTMLInputElement || inputEl instanceof HTMLTextAreaElement
@@ -222,7 +228,7 @@ export class PasteHandler {
 						newValue: linkValue
 					});
 				}
-				
+
 				// Handle both input/textarea elements and contenteditable divs
 				if (inputEl instanceof HTMLInputElement || inputEl instanceof HTMLTextAreaElement) {
 					// Standard input/textarea
@@ -232,25 +238,25 @@ export class PasteHandler {
 					inputEl.textContent = linkValue;
 					inputEl.innerText = linkValue;
 				}
-				
+
 				// Trigger multiple events to ensure Obsidian recognizes the change
 				const inputEvent = new Event('input', { bubbles: true, cancelable: true });
 				const changeEvent = new Event('change', { bubbles: true, cancelable: true });
 				const blurEvent = new Event('blur', { bubbles: true, cancelable: true });
-				
+
 				inputEl.dispatchEvent(inputEvent);
-				
+
 				// Small delay before change event
 				setTimeout(() => {
 					inputEl.dispatchEvent(changeEvent);
-					
+
 					// Focus and blur to trigger Obsidian's update mechanism
 					if (inputEl instanceof HTMLElement) {
 						inputEl.focus();
 						setTimeout(() => {
 							inputEl.blur();
 							inputEl.dispatchEvent(blurEvent);
-							
+
 							// Focus the editor to complete the action
 							setTimeout(() => {
 								const view = this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -293,9 +299,9 @@ export class PasteHandler {
 			element.matches('input.metadata-input') ||
 			element.matches('textarea.metadata-input') ||
 			// Also check if the element itself is an input/textarea/div inside a property
-			((element instanceof HTMLInputElement || 
-			  element instanceof HTMLTextAreaElement ||
-			  (element instanceof HTMLDivElement && element.classList.contains('metadata-input-longtext'))) &&
+			((element instanceof HTMLInputElement ||
+				element instanceof HTMLTextAreaElement ||
+				(element instanceof HTMLDivElement && element.classList.contains('metadata-input-longtext'))) &&
 				propertyEl !== null)
 		);
 	}
@@ -317,11 +323,17 @@ export class DropHandler {
 	constructor(
 		app: App,
 		settings: ImageManagerSettings,
-		imageProcessor: ImageProcessor
+		imageProcessor: ImageProcessor,
+		observable?: { subscribe(fn: (settings: ImageManagerSettings) => void): void }
 	) {
 		this.app = app;
 		this.settings = settings;
 		this.imageProcessor = imageProcessor;
+
+		// Subscribe to settings updates if observable is provided
+		observable?.subscribe((newSettings) => {
+			this.updateSettings(newSettings);
+		});
 	}
 
 	/**
@@ -374,7 +386,7 @@ export class DropHandler {
 		for (let i = 0; i < imageFiles.length; i++) {
 			const imageFile = imageFiles[i];
 			if (!imageFile) continue;
-			
+
 			const result = await this.imageProcessor.processImageFile(
 				imageFile,
 				activeFile,

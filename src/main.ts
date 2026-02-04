@@ -15,8 +15,27 @@ import { BannerService } from './services/BannerService';
 import { openFilePicker } from './modals/FilePickerModal';
 import { openRemoteSearch } from './modals/RemoteSearchModal';
 
+/**
+ * Simple observer for settings changes
+ * Services subscribe to receive settings updates via a single notify() call
+ */
+class SettingsObservable {
+	private observers: ((settings: ImageManagerSettings) => void)[] = [];
+
+	subscribe(fn: (settings: ImageManagerSettings) => void): void {
+		this.observers.push(fn);
+	}
+
+	notify(settings: ImageManagerSettings): void {
+		this.observers.forEach(fn => fn(settings));
+	}
+}
+
 export default class ImageManagerPlugin extends Plugin {
 	settings: ImageManagerSettings;
+
+	// Settings observer for notifying services of changes
+	private settingsObservable = new SettingsObservable();
 
 	// Services
 	private storageManager: StorageManager;
@@ -52,7 +71,7 @@ export default class ImageManagerPlugin extends Plugin {
 	onunload(): void {
 		// Clean up banner service
 		this.bannerService?.destroy();
-		
+
 		this.log('Image Manager plugin unloaded');
 	}
 
@@ -67,6 +86,7 @@ export default class ImageManagerPlugin extends Plugin {
 		}
 
 		let migrated = false;
+		const failures: string[] = [];
 
 		// Access secretStorage via type assertion (may not be in type definitions)
 		const secretStorage = (this.app as unknown as { secretStorage?: { setSecret(id: string, secret: string): void } }).secretStorage;
@@ -81,8 +101,10 @@ export default class ImageManagerPlugin extends Plugin {
 				secretStorage.setSecret(secretId, this.settings.pexelsApiKey);
 				this.settings.pexelsApiKeySecretId = secretId;
 				migrated = true;
+				console.info('[Image Manager] Successfully migrated Pexels API key to SecretStorage');
 			} catch (error) {
-				console.error('Failed to migrate Pexels API key to SecretStorage:', error);
+				console.error('[Image Manager] Failed to migrate Pexels API key to SecretStorage:', error);
+				failures.push('Pexels');
 			}
 		}
 
@@ -93,15 +115,26 @@ export default class ImageManagerPlugin extends Plugin {
 				secretStorage.setSecret(secretId, this.settings.pixabayApiKey);
 				this.settings.pixabayApiKeySecretId = secretId;
 				migrated = true;
+				console.info('[Image Manager] Successfully migrated Pixabay API key to SecretStorage');
 			} catch (error) {
-				console.error('Failed to migrate Pixabay API key to SecretStorage:', error);
+				console.error('[Image Manager] Failed to migrate Pixabay API key to SecretStorage:', error);
+				failures.push('Pixabay');
 			}
 		}
 
 		// Save settings if migration occurred
 		if (migrated) {
 			await this.saveSettings();
-			this.log('Migrated API keys to SecretStorage');
+			console.info('[Image Manager] API key migration completed');
+		}
+
+		// Show Notice if any migrations failed
+		if (failures.length > 0) {
+			new Notice(
+				`Image Manager: Failed to migrate ${failures.join(' and ')} API key(s) to secure storage. ` +
+				`Please re-enter your API key(s) in settings.`,
+				10000
+			);
 		}
 	}
 
@@ -109,19 +142,20 @@ export default class ImageManagerPlugin extends Plugin {
 	 * Initialize all services
 	 */
 	private initializeServices(): void {
-		this.storageManager = new StorageManager(this.app, this.settings);
-		this.remoteService = new RemoteImageService(this.app, this.settings);
-		this.imageProcessor = new ImageProcessor(this.app, this.settings, this.storageManager);
-		this.propertyHandler = new PropertyHandler(this.app, this.settings, this.storageManager, this.imageProcessor, this.remoteService);
+		this.storageManager = new StorageManager(this.app, this.settings, this.settingsObservable);
+		this.remoteService = new RemoteImageService(this.app, this.settings, this.settingsObservable);
+		this.imageProcessor = new ImageProcessor(this.app, this.settings, this.storageManager, this.settingsObservable);
+		this.propertyHandler = new PropertyHandler(this.app, this.settings, this.storageManager, this.imageProcessor, this.remoteService, this.settingsObservable);
 		this.pasteHandler = new PasteHandler(
 			this.app,
 			this.settings,
 			this.imageProcessor,
-			this.propertyHandler
+			this.propertyHandler,
+			this.settingsObservable
 		);
-		this.dropHandler = new DropHandler(this.app, this.settings, this.imageProcessor);
-		this.conversionService = new LocalConversionService(this.app, this.settings, this.storageManager, this.imageProcessor);
-		this.bannerService = new BannerService(this.app, this.settings);
+		this.dropHandler = new DropHandler(this.app, this.settings, this.imageProcessor, this.settingsObservable);
+		this.conversionService = new LocalConversionService(this.app, this.settings, this.storageManager, this.imageProcessor, this.settingsObservable);
+		this.bannerService = new BannerService(this.app, this.settings, this.settingsObservable);
 	}
 
 	/**
@@ -167,11 +201,11 @@ export default class ImageManagerPlugin extends Plugin {
 						void (async () => {
 							// Small delay to let file fully load
 							await new Promise(resolve => setTimeout(resolve, 500));
-							
+
 							// Check if this is the active file
 							const activeFile = this.app.workspace.getActiveFile();
 							const isActiveFile = activeFile && activeFile.path === file.path;
-							
+
 							// Only process if it's the active file OR background processing is enabled
 							if (isActiveFile || this.settings.processBackgroundChanges) {
 								const count = await this.conversionService.processFile(file, !isActiveFile);
@@ -222,7 +256,7 @@ export default class ImageManagerPlugin extends Plugin {
 							// Check if this is the active file
 							const activeFile = this.app.workspace.getActiveFile();
 							const isActiveFile = activeFile && activeFile.path === file.path;
-							
+
 							// Only process if it's the active file OR background processing is enabled
 							if (isActiveFile || this.settings.processBackgroundChanges) {
 								const count = await this.conversionService.processFile(file, !isActiveFile);
@@ -405,18 +439,8 @@ export default class ImageManagerPlugin extends Plugin {
 	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
 
-		// Update services with new settings
-		this.storageManager?.updateSettings(this.settings);
-		this.imageProcessor?.updateSettings(this.settings);
-		this.propertyHandler?.updateSettings(this.settings);
-		this.pasteHandler?.updateSettings(this.settings);
-		this.dropHandler?.updateSettings(this.settings);
-		this.remoteService?.updateSettings(this.settings);
-		this.conversionService?.updateSettings(this.settings);
-		
-		// Update and apply banner settings
-		this.bannerService?.updateSettings(this.settings);
-		this.bannerService?.applySettings();
+		// Notify all services of the settings change
+		this.settingsObservable.notify(this.settings);
 	}
 
 	/**

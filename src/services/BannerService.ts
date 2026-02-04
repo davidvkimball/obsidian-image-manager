@@ -66,9 +66,15 @@ export class BannerService {
 	private app: App;
 	private settings: ImageManagerSettings;
 
-	constructor(app: App, settings: ImageManagerSettings) {
+	constructor(app: App, settings: ImageManagerSettings, observable?: { subscribe(fn: (settings: ImageManagerSettings) => void): void }) {
 		this.app = app;
 		this.settings = settings;
+
+		// Subscribe to settings updates if observable is provided
+		observable?.subscribe((newSettings) => {
+			this.updateSettings(newSettings);
+			this.applySettings();
+		});
 	}
 
 	/**
@@ -104,7 +110,7 @@ export class BannerService {
 	 */
 	processAll(force: boolean = false): void {
 		const deviceSettings = this.getDeviceSettings();
-		
+
 		this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
 			const view = leaf.view as MarkdownView;
 			if (view instanceof MarkdownView) {
@@ -138,7 +144,7 @@ export class BannerService {
 		if (!data.icon) {
 			data.needsUpdate = true;
 		}
-		
+
 		const deviceSettings = this.getDeviceSettings();
 		if (deviceSettings.enabled) {
 			await this.render(data, view, force);
@@ -189,7 +195,7 @@ export class BannerService {
 				const propertySettings = this.settings.banner.properties;
 				const imageProp = propertySettings.imageProperty;
 				const iconProp = propertySettings.iconProperty;
-				
+
 				// Check if hide property is enabled and set to truthy value
 				if (propertySettings.hidePropertyEnabled && propertySettings.hideProperty) {
 					const hideProp = propertySettings.hideProperty;
@@ -198,11 +204,11 @@ export class BannerService {
 						return newData;
 					}
 				}
-				
+
 				// Check if banner or icon property exists in cache
 				const hasBannerProperty = cache.frontmatter[imageProp] != null;
 				const hasIconProperty = deviceSettings.iconEnabled && cache.frontmatter[iconProp] != null;
-				
+
 				// If cache is populated and no banner/icon property exists, return early
 				// This is safe because the cache is definitive for MD files
 				if (!hasBannerProperty && !hasIconProperty) {
@@ -221,7 +227,7 @@ export class BannerService {
 		}
 
 		const propertySettings = this.settings.banner.properties;
-		
+
 		// Check if hide property is enabled and set to truthy value
 		if (propertySettings.hidePropertyEnabled && propertySettings.hideProperty) {
 			const hideProp = propertySettings.hideProperty;
@@ -230,7 +236,7 @@ export class BannerService {
 				return newData;
 			}
 		}
-		
+
 		const imageProp = propertySettings.imageProperty;
 		const iconProp = propertySettings.iconProperty;
 
@@ -239,14 +245,14 @@ export class BannerService {
 		if (imageValue && typeof imageValue === 'string') {
 			newData.image = imageValue;
 			newData.filepath = file.path;
-			
+
 			if (oldData.filepath !== newData.filepath) {
 				newData.needsUpdate = true;
 				newData.isImageChange = true;
 			} else if (oldData.image !== newData.image) {
 				newData.needsUpdate = true;
 				newData.isImageChange = true;
-				
+
 				// Check if only image properties (offset, repeat) changed
 				if (await this.isImagePropertiesUpdate(oldData.image, newData.image, view)) {
 					newData.isImagePropsUpdate = true;
@@ -278,7 +284,7 @@ export class BannerService {
 	async render(data: BannerData, targetView?: MarkdownView, force: boolean = false): Promise<void> {
 		const { image, viewMode, lastViewMode, needsUpdate, isImageChange } = data;
 		const view = targetView || this.getActiveView();
-		
+
 		if (!view || !(view instanceof MarkdownView)) {
 			return;
 		}
@@ -391,11 +397,11 @@ export class BannerService {
 			const { icon } = data;
 			let iconContainer: HTMLElement | null = banner.querySelector(`.${CSS_CLASSES.Icon}`);
 			const hasContainer = iconContainer !== null;
-			
+
 			if (hasContainer) {
 				iconContainer?.classList.add(CSS_CLASSES.Static);
 			}
-			
+
 			if (deviceSettings.iconEnabled && icon) {
 				if (!hasContainer) {
 					iconContainer = document.createElement('div');
@@ -409,7 +415,7 @@ export class BannerService {
 				if (!iconElement) continue;
 
 				const iconData = await this.parseIcon(icon, view);
-				
+
 				// Escape special characters in the value for CSS
 				let value = iconData.value?.replace(/([#.:[\\]"])/g, '\\$1') || '';
 				iconElement.dataset.type = iconData.type;
@@ -439,14 +445,14 @@ export class BannerService {
 	private injectBanners(banners: HTMLElement[], containers: NodeListOf<HTMLElement>): void {
 		const deviceSettings = this.getDeviceSettings();
 		const shouldAnimate = deviceSettings.animation;
-		
+
 		containers.forEach((container, index) => {
 			const banner = banners[index];
 			if (banner) {
 				// Remove static class if it exists to allow animation
 				banner.classList.remove(CSS_CLASSES.Static);
 				container.prepend(banner);
-				
+
 				if (shouldAnimate) {
 					// Force reflow and start animation on next frame
 					void banner.offsetHeight; // Force reflow
@@ -704,13 +710,13 @@ export class BannerService {
 		const result = { value: null as string | null, type: BannerIconType.Text };
 
 		// Check if it's a link format (explicit patterns or file path with image extension)
-		const isExplicitLink = 
+		const isExplicitLink =
 			PATTERNS.Wikilink.test(str) ||
 			PATTERNS.Markdown.test(str) ||
 			PATTERNS.MarkdownBare.test(str) ||
 			PATTERNS.Weblink.test(str) ||
 			this.isObsidianUrl(str);
-		
+
 		// Check if it looks like a file path (has image extension)
 		const imageExtensions = /\.(jpg|jpeg|png|gif|svg|webp|bmp|ico|avif)$/i;
 		const isFilePath = imageExtensions.test(str);
@@ -768,7 +774,7 @@ export class BannerService {
 		});
 		temp.textContent = textContent.toUpperCase();
 		document.body.appendChild(temp);
-		
+
 		const checkWidth = iconSize - 16;
 		let fontSize = iconSize; // Start big
 		setCssProperties(temp, { 'font-size': `${fontSize}px` });
@@ -816,7 +822,7 @@ export class BannerService {
 	destroy(): void {
 		// Remove all banners
 		document.querySelectorAll(`.${CSS_CLASSES.Main}`).forEach(el => el.remove());
-		
+
 		// Clear data store
 		bannerDataStore.clear();
 	}

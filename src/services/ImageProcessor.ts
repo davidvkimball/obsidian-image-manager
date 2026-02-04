@@ -15,10 +15,15 @@ export class ImageProcessor {
 	private settings: ImageManagerSettings;
 	private storageManager: StorageManager;
 
-	constructor(app: App, settings: ImageManagerSettings, storageManager: StorageManager) {
+	constructor(app: App, settings: ImageManagerSettings, storageManager: StorageManager, observable?: { subscribe(fn: (settings: ImageManagerSettings) => void): void }) {
 		this.app = app;
 		this.settings = settings;
 		this.storageManager = storageManager;
+
+		// Subscribe to settings updates if observable is provided
+		observable?.subscribe((newSettings) => {
+			this.updateSettings(newSettings);
+		});
 	}
 
 	/**
@@ -66,7 +71,7 @@ export class ImageProcessor {
 				// Show descriptive image modal if enabled, otherwise show rename modal
 				if (this.settings.enableDescriptiveImages) {
 					const descResult = await openDescriptiveImageModal(this.app, tempFile, suggestedName);
-					
+
 					if (descResult.cancelled) {
 						// User cancelled - delete temp file and return
 						await this.app.fileManager.trashFile(tempFile);
@@ -204,7 +209,7 @@ export class ImageProcessor {
 				// Show descriptive image modal if enabled and NOT inserting to property, otherwise show rename modal
 				if (this.settings.enableDescriptiveImages && !isPropertyInsertion) {
 					const descResult = await openDescriptiveImageModal(this.app, tempFile, suggestedName);
-					
+
 					if (descResult.cancelled) {
 						await this.app.fileManager.trashFile(tempFile);
 						return {
