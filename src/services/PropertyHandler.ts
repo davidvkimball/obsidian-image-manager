@@ -44,15 +44,16 @@ export class PropertyHandler {
 	async setPropertyValue(
 		noteFile: TFile,
 		propertyName: string,
-		imageFile: TFile
+		imageFile: TFile,
+		altText?: string
 	): Promise<void> {
 		const linkValue = this.formatPropertyLink(imageFile, noteFile);
 
 		try {
 			if (isMdxFile(noteFile)) {
-				await this.setMdxProperty(noteFile, propertyName, linkValue);
+				await this.setMdxProperty(noteFile, propertyName, linkValue, altText);
 			} else {
-				await this.setMdProperty(noteFile, propertyName, linkValue);
+				await this.setMdProperty(noteFile, propertyName, linkValue, altText);
 			}
 			new Notice(`Image added to property: ${propertyName}`);
 		} catch (error) {
@@ -68,10 +69,14 @@ export class PropertyHandler {
 	private async setMdProperty(
 		file: TFile,
 		propertyName: string,
-		value: string
+		value: string,
+		altText?: string
 	): Promise<void> {
 		await this.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
 			frontmatter[propertyName] = value;
+			if (altText && this.settings.altTextProperty) {
+				frontmatter[this.settings.altTextProperty] = altText;
+			}
 		});
 	}
 
@@ -81,10 +86,14 @@ export class PropertyHandler {
 	private async setMdxProperty(
 		file: TFile,
 		propertyName: string,
-		value: string
+		value: string,
+		altText?: string
 	): Promise<void> {
 		await processMdxFrontMatter(this.app, file, (frontmatter) => {
 			frontmatter[propertyName] = value;
+			if (altText && this.settings.altTextProperty) {
+				frontmatter[this.settings.altTextProperty] = altText;
+			}
 		});
 	}
 
@@ -222,7 +231,7 @@ export class PropertyHandler {
 		}
 
 		// Set the property
-		await this.setPropertyValue(noteFile, propertyName, result.file);
+		await this.setPropertyValue(noteFile, propertyName, result.file, result.description);
 
 		// Append referral text at end of file if enabled and we have RemoteImage info
 		if (this.settings.appendReferral && remoteImage && this.remoteService) {

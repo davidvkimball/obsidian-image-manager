@@ -94,7 +94,7 @@ export interface BannerDeviceSettings {
 	padding: number;
 	fade: boolean;
 	animation: boolean;
-	
+
 	// Icon settings
 	iconEnabled: boolean;
 	iconSize: number;
@@ -248,7 +248,7 @@ export interface ImageManagerSettings {
 	imageNameTemplate: string;
 	attachmentLocation: AttachmentLocation;
 	customAttachmentPath: string;
-	
+
 	// Image Services
 	defaultProvider: ImageProvider;
 	unsplashProxyServer: string;
@@ -258,20 +258,23 @@ export interface ImageManagerSettings {
 	pixabayApiKeySecretId: string; // Secret ID for SecretStorage (1.11.4+)
 	defaultOrientation: ImageOrientation;
 	defaultImageSize: ImageSize;
-	
+
 	// Property Insertion
 	enablePropertyPaste: boolean;
 	propertyLinkFormat: PropertyLinkFormat;
 	customPropertyLinkFormat: string;
 	defaultPropertyName: string;
 	defaultIconPropertyName: string;
-	
+
+	// Alt text property
+	altTextProperty: string;
+
 	// Conversion
 	autoConvertRemoteImages: boolean;
 	convertOnNoteOpen: boolean;
 	convertOnNoteSave: boolean;
 	processBackgroundChanges: boolean;
-	
+
 	// Rename Options
 	showRenameDialog: boolean;
 	autoRename: boolean;
@@ -279,16 +282,16 @@ export interface ImageManagerSettings {
 	dupNumberAtStart: boolean;
 	disableRenameNotice: boolean;
 	enableDescriptiveImages: boolean; // Ask for description, use as display text (note body only)
-	
+
 	// Image Insertion Options (remote image attribution options)
 	insertSize: string; // Image size in markdown (e.g., "200" or "200x100")
 	insertReferral: boolean; // Insert attribution text (e.g., "Photo by [author] on [provider]")
 	insertBackLink: boolean; // Insert backlink before attribution (e.g., "[Backlink](url) | Photo by...")
 	appendReferral: boolean; // Append referral at end of file when inserting to frontmatter
-	
+
 	// Banner Settings
 	banner: BannerSettings;
-	
+
 	// Advanced
 	supportedExtensions: string[];
 	debugMode: boolean;
@@ -304,7 +307,7 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	imageNameTemplate: '',
 	attachmentLocation: AttachmentLocation.ObsidianDefault,
 	customAttachmentPath: './assets',
-	
+
 	// Image Services
 	defaultProvider: ImageProvider.Unsplash,
 	unsplashProxyServer: '',
@@ -314,20 +317,21 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	pixabayApiKeySecretId: '',
 	defaultOrientation: ImageOrientation.Any,
 	defaultImageSize: ImageSize.Large,
-	
+
 	// Property Insertion
 	enablePropertyPaste: true,
 	propertyLinkFormat: PropertyLinkFormat.ObsidianDefault,
 	customPropertyLinkFormat: '{image-url}',
 	defaultPropertyName: 'banner',
 	defaultIconPropertyName: 'icon',
-	
+	altTextProperty: '',
+
 	// Conversion
 	autoConvertRemoteImages: false,
 	convertOnNoteOpen: false,
 	convertOnNoteSave: false,
 	processBackgroundChanges: true,
-	
+
 	// Rename Options
 	showRenameDialog: true,
 	autoRename: false,
@@ -335,16 +339,16 @@ export const DEFAULT_SETTINGS: ImageManagerSettings = {
 	dupNumberAtStart: false,
 	disableRenameNotice: false,
 	enableDescriptiveImages: false,
-	
+
 	// Image Insertion Options (remote image attribution options)
 	insertSize: '', // Empty = no size specified
 	insertReferral: true, // Default to true (attribution)
 	insertBackLink: false, // Default to false
 	appendReferral: false, // Default to false
-	
+
 	// Banner Settings
 	banner: { ...DEFAULT_BANNER_SETTINGS },
-	
+
 	// Advanced
 	supportedExtensions: ['md', 'mdx'],
 	debugMode: false,
@@ -375,6 +379,7 @@ export interface ProcessedImage {
 	file: TFile | null;
 	path: string;
 	linkText: string;
+	description?: string;
 	success: boolean;
 	error?: string;
 }

@@ -430,6 +430,21 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 						});
 				});
 		});
+
+		group.addSetting((setting) => {
+			setting
+				.setName('Alt text property name')
+				.setDesc('Property name to use for image alt text (description) when inserting to properties. If "Descriptive images" is enabled, this will be filled with the description you provide. If disabled, it will be filled with the search term for external images.')
+				.addText((text) => {
+					text
+						.setPlaceholder('alt')
+						.setValue(this.plugin.settings.altTextProperty)
+						.onChange(async (value) => {
+							this.plugin.settings.altTextProperty = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		});
 	}
 
 	private renderConversionSettings(containerEl: HTMLElement): void {

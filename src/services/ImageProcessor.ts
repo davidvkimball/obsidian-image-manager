@@ -129,6 +129,7 @@ export class ImageProcessor {
 					file: renamedFile,
 					path: finalPath,
 					linkText,
+					description: displayText,
 					success: true,
 				};
 			} else {
@@ -150,6 +151,7 @@ export class ImageProcessor {
 					file: savedFile,
 					path: finalPath,
 					linkText,
+					description: undefined,
 					success: true,
 				};
 			}
@@ -206,8 +208,11 @@ export class ImageProcessor {
 				let finalName: string;
 				let displayText: string | undefined;
 
-				// Show descriptive image modal if enabled and NOT inserting to property, otherwise show rename modal
-				if (this.settings.enableDescriptiveImages && !isPropertyInsertion) {
+				// Show descriptive image modal if enabled
+				// For property insertions, we only show it if an alt text property is configured
+				const shouldShowDescriptive = this.settings.enableDescriptiveImages && (!isPropertyInsertion || this.settings.altTextProperty !== '');
+
+				if (shouldShowDescriptive) {
 					const descResult = await openDescriptiveImageModal(this.app, tempFile, suggestedName);
 
 					if (descResult.cancelled) {
@@ -264,6 +269,7 @@ export class ImageProcessor {
 					file: renamedFile,
 					path: finalPath,
 					linkText,
+					description: displayText,
 					success: true,
 				};
 			} else {
@@ -284,6 +290,7 @@ export class ImageProcessor {
 					file: savedFile,
 					path: finalPath,
 					linkText,
+					description: isPropertyInsertion ? suggestedNameOverride : undefined,
 					success: true,
 				};
 			}

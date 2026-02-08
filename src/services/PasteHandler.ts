@@ -193,7 +193,8 @@ export class PasteHandler {
 			await this.propertyHandler.setPropertyValue(
 				activeFile,
 				propertyName,
-				result.file
+				result.file,
+				result.description
 			);
 
 			// Wait for Obsidian to process the file change and update metadata cache
