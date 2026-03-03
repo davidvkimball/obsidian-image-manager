@@ -47,12 +47,12 @@ export class DescriptiveImageModal extends Modal {
 		new Setting(contentEl)
 			.setName('Image description')
 			.setDesc('Describe this image. This will be used as display text and for the filename.')
-			.addText((text: any) => {
+			.addText(text => {
 				this.descriptionInput = text.inputEl;
 				text
 					.setPlaceholder('A beautiful sunset over mountains')
 					.setValue(this.description)
-					.onChange((value: any) => {
+					.onChange(value => {
 						this.description = value;
 						this.updatePreview();
 					});

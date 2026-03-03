@@ -97,12 +97,12 @@ export class RenameModal extends Modal {
 		new Setting(containerEl)
 			.setName('New name')
 			.setDesc('Enter a new name for the image (without extension)')
-			.addText((text: any) => {
+			.addText(text => {
 				this.nameInput = text.inputEl;
 				text
 					.setPlaceholder('Enter name')
 					.setValue(this.currentName)
-					.onChange((value: any) => {
+					.onChange(value => {
 						this.currentName = this.sanitizeName(value);
 						this.updatePreview();
 					});
