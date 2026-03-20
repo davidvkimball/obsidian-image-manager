@@ -616,22 +616,35 @@ export class BannerService {
 			const vault = this.app.vault;
 			let file: TFile | null = null;
 
-			// Try relative path resolution
-			if (view?.file && (url.includes('../') || url.includes('./') || (!url.startsWith('/') && url.includes('/')))) {
-				const resolvedPath = this.app.metadataCache.getFirstLinkpathDest(url, view.file.path);
-				if (resolvedPath) {
-					file = resolvedPath;
+			// Handle absolute-from-root paths (e.g. /images/blog/1.jpg)
+			// Check if Vault CMS has a public path resolver available
+			if (url.startsWith('/') && !url.startsWith('//')) {
+				const vaultCms = (this.app as unknown as { plugins?: { plugins?: Record<string, unknown> } }).plugins?.plugins?.['vault-cms'] as { resolvePublicPath?: (path: string) => string | null } | undefined;
+				const resolved = vaultCms?.resolvePublicPath?.(url);
+				if (resolved) {
+					url = resolved;
+					external = true;
 				}
 			}
 
-			// Fallback to exact path/name matching
-			if (!file) {
-				const files = vault.getFiles().filter(f => f.path === url || f.name === url);
-				file = files.find(f => f.path === url) || files.find(f => f.name === url) || null;
-			}
+			if (!external) {
+				// Try resolving relative to the current note first (handles bare filenames like "cover.png")
+				if (view?.file) {
+					const resolvedPath = this.app.metadataCache.getFirstLinkpathDest(url, view.file.path);
+					if (resolvedPath) {
+						file = resolvedPath;
+					}
+				}
 
-			if (file) {
-				url = vault.getResourcePath(file);
+				// Fallback to exact path/name matching
+				if (!file) {
+					const files = vault.getFiles().filter(f => f.path === url || f.name === url);
+					file = files.find(f => f.path === url) || files.find(f => f.name === url) || null;
+				}
+
+				if (file) {
+					url = vault.getResourcePath(file);
+				}
 			}
 		}
 
@@ -748,6 +761,11 @@ export class BannerService {
 		return oldOpt.url === newOpt.url;
 	}
 
+	/**
+	 * Resolve absolute-from-root image paths (e.g. /images/blog/1.jpg)
+	 * Uses the configured project root to find files in the public/ folder.
+	 * Returns a file:// URL if found, null otherwise.
+	 */
 	/**
 	 * Check if URL is an obsidian:// URL
 	 */
