@@ -46,7 +46,7 @@ export class DescriptiveImageModal extends Modal {
 		// Description input
 		new Setting(contentEl)
 			.setName('Image description')
-			.setDesc('Describe this image. This will be used as display text and for the filename.')
+			.setDesc('Describe this image. This will be used as display text and for the file name.')
 			.addText(text => {
 				this.descriptionInput = text.inputEl;
 				text

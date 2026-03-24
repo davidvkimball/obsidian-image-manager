@@ -575,7 +575,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting(setting => {
 			setting
 				.setName('Descriptive images')
-				.setDesc('Ask for image description, use as display text and kebab-case for filename (applies to note body insertions only, not properties)')
+				.setDesc('Ask for image description, use as display text and kebab-case for file name (applies to note body insertions only, not properties)')
 				.addToggle(toggle => {
 					toggle
 						.setValue(this.plugin.settings.enableDescriptiveImages)
@@ -618,7 +618,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting(setting => {
 			setting
 				.setName('Duplicate number at start')
-				.setDesc('Put the duplicate number at the start (e.g., "1-image" instead of "image-1")')
+				.setDesc('Put the duplicate number at the start ("1-image" instead of "image-1")')
 				.addToggle(toggle => {
 					toggle
 						.setValue(this.plugin.settings.dupNumberAtStart)
