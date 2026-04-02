@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-image-manager",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"description": "Insert, rename, and sort images within your notes.",
 	"main": "main.js",
 	"type": "module",

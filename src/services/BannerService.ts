@@ -282,7 +282,7 @@ export class BannerService {
 	 * Render banner in the view
 	 */
 	async render(data: BannerData, targetView?: MarkdownView, force: boolean = false): Promise<void> {
-		const { image, viewMode, lastViewMode, needsUpdate, isImageChange } = data;
+		const { image, viewMode, lastViewMode } = data;
 		const view = targetView || this.getActiveView();
 
 		if (!view || !(view instanceof MarkdownView)) {
@@ -290,13 +290,29 @@ export class BannerService {
 		}
 
 		const container = view.containerEl;
-		if (!container || (!force && !needsUpdate && lastViewMode === viewMode)) {
+		if (!container) {
 			return;
 		}
 
 		const containers: NodeListOf<HTMLElement> = container.querySelectorAll(
 			'.cm-scroller, .markdown-reading-view > .markdown-preview-view'
 		);
+
+		// After switching away (e.g. to an image) and back, the Markdown view is recreated and
+		// banner nodes are gone, but stored data still matches — without this we'd skip render.
+		const bannerMissing =
+			!!image &&
+			containers.length > 0 &&
+			Array.from(containers).some((c) => !c.querySelector(`.${CSS_CLASSES.Main}`));
+
+		if (bannerMissing) {
+			data.needsUpdate = true;
+			data.isImageChange = true;
+		}
+
+		if (!force && !data.needsUpdate && lastViewMode === viewMode && !bannerMissing) {
+			return;
+		}
 
 		if (containers.length === 0) {
 			return;
@@ -308,7 +324,7 @@ export class BannerService {
 		// Update icon
 		await this.updateIcons(data, banners, view);
 
-		if (isImageChange) {
+		if (data.isImageChange) {
 			this.injectBanners(banners, containers);
 		} else {
 			this.replaceBanners(banners);
