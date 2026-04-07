@@ -243,7 +243,7 @@ export class StorageManager {
 		// Remove or replace invalid characters
 		return name
 			.replace(/[\\/:*?"<>|]/g, '-')  // Replace Windows invalid chars
-			.replace(/\s+/g, ' ')            // Normalize whitespace
+			.replace(/\s+/g, '-')            // Replace whitespace with hyphens
 			.replace(/^\.+/, '')             // Remove leading dots
 			.replace(/\.+$/, '')             // Remove trailing dots
 			.trim();

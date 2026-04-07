@@ -148,7 +148,7 @@ export class RenameModal extends Modal {
 	private sanitizeName(name: string): string {
 		return name
 			.replace(/[\\/:*?"<>|]/g, '-')
-			.replace(/\s+/g, ' ')
+			.replace(/\s+/g, '-')
 			.trim();
 	}
 
