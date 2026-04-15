@@ -239,6 +239,31 @@ export const DEFAULT_BANNER_SETTINGS: BannerSettings = {
 };
 
 /**
+ * Deep-merge saved banner settings with defaults so partial persisted data
+ * cannot drop device buckets (shallow Object.assign would replace entire `banner`).
+ */
+export function mergeBannerSettings(partial?: Partial<BannerSettings> | null): BannerSettings {
+	return {
+		properties: {
+			...DEFAULT_BANNER_SETTINGS.properties,
+			...partial?.properties,
+		},
+		desktop: {
+			...DEFAULT_BANNER_DEVICE_SETTINGS[DeviceType.Desktop],
+			...partial?.desktop,
+		},
+		tablet: {
+			...DEFAULT_BANNER_DEVICE_SETTINGS[DeviceType.Tablet],
+			...partial?.tablet,
+		},
+		phone: {
+			...DEFAULT_BANNER_DEVICE_SETTINGS[DeviceType.Phone],
+			...partial?.phone,
+		},
+	};
+}
+
+/**
  * Plugin settings interface
  */
 export interface ImageManagerSettings {

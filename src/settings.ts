@@ -8,6 +8,7 @@ import { App, BaseComponent, Platform, PluginSettingTab, requireApiVersion , Set
 import {
 	ImageManagerSettings,
 	DEFAULT_SETTINGS,
+	mergeBannerSettings,
 	ImageProvider,
 	ImageOrientation,
 	ImageSize,
@@ -29,7 +30,7 @@ interface SecretComponentType {
 	};
 }
 
-export { DEFAULT_SETTINGS };
+export { DEFAULT_SETTINGS, mergeBannerSettings };
 export type { ImageManagerSettings };
 
 export class ImageManagerSettingTab extends PluginSettingTab {

@@ -4,7 +4,7 @@
  */
 
 import { Editor, MarkdownView, Notice, Plugin, requireApiVersion, TFile, WorkspaceLeaf } from 'obsidian';
-import { DEFAULT_SETTINGS, ImageManagerSettings, ImageManagerSettingTab } from './settings';
+import { DEFAULT_SETTINGS, mergeBannerSettings, ImageManagerSettings, ImageManagerSettingTab } from './settings';
 import { StorageManager } from './services/StorageManager';
 import { ImageProcessor } from './services/ImageProcessor';
 import { PropertyHandler } from './services/PropertyHandler';
@@ -430,7 +430,9 @@ export default class ImageManagerPlugin extends Plugin {
 	 */
 	async loadSettings(): Promise<void> {
 		const data = await this.loadData() as Partial<ImageManagerSettings> | null;
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, data ?? {});
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, data ?? {}, {
+			banner: mergeBannerSettings(data?.banner),
+		});
 	}
 
 	/**

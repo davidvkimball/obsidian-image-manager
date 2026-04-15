@@ -38,6 +38,7 @@ import {
 	BannerContentType,
 	BannerIconType,
 	DeviceType,
+	DEFAULT_BANNER_DEVICE_SETTINGS,
 } from '../types';
 import { getFrontmatter } from '../utils/mdx-frontmatter';
 
@@ -102,7 +103,10 @@ export class BannerService {
 	 */
 	getDeviceSettings(): BannerDeviceSettings {
 		const device = this.getCurrentDevice();
-		return this.settings.banner[device];
+		return (
+			this.settings.banner[device] ??
+			DEFAULT_BANNER_DEVICE_SETTINGS[device]
+		);
 	}
 
 	/**
