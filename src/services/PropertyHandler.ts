@@ -5,7 +5,7 @@
 
 import { App, TFile, Notice } from 'obsidian';
 import { ImageManagerSettings, PropertyLinkFormat, RemoteImage } from '../types';
-import { isMdxFile, processMdxFrontMatter } from '../utils/mdx-frontmatter';
+import { isMdxFile, processMdxFrontMatter, getNestedProperty, setNestedProperty } from '../utils/mdx-frontmatter';
 import { StorageManager } from './StorageManager';
 import { ImageProcessor } from './ImageProcessor';
 import type { RemoteImageService } from './RemoteImageService';
@@ -73,9 +73,9 @@ export class PropertyHandler {
 		altText?: string
 	): Promise<void> {
 		await this.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
-			frontmatter[propertyName] = value;
+			setNestedProperty(frontmatter, propertyName, value);
 			if (altText && this.settings.altTextProperty) {
-				frontmatter[this.settings.altTextProperty] = altText;
+				setNestedProperty(frontmatter, this.settings.altTextProperty, altText);
 			}
 		});
 	}
@@ -90,9 +90,9 @@ export class PropertyHandler {
 		altText?: string
 	): Promise<void> {
 		await processMdxFrontMatter(this.app, file, (frontmatter) => {
-			frontmatter[propertyName] = value;
+			setNestedProperty(frontmatter, propertyName, value);
 			if (altText && this.settings.altTextProperty) {
-				frontmatter[this.settings.altTextProperty] = altText;
+				setNestedProperty(frontmatter, this.settings.altTextProperty, altText);
 			}
 		});
 	}
@@ -191,15 +191,14 @@ export class PropertyHandler {
 		propertyName: string
 	): unknown {
 		const cache = this.app.metadataCache.getFileCache(file);
-		return cache?.frontmatter?.[propertyName];
+		return getNestedProperty(cache?.frontmatter, propertyName);
 	}
 
 	/**
 	 * Check if a property exists in frontmatter
 	 */
 	hasProperty(file: TFile, propertyName: string): boolean {
-		const cache = this.app.metadataCache.getFileCache(file);
-		return cache?.frontmatter?.[propertyName] !== undefined;
+		return this.getPropertyValue(file, propertyName) !== undefined;
 	}
 
 	/**

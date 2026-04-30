@@ -7,6 +7,41 @@
 import { App, TFile, parseYaml, stringifyYaml } from 'obsidian';
 
 /**
+ * Get a nested property value using dot-notation (e.g. "image.src")
+ */
+export function getNestedProperty(obj: Record<string, unknown> | null | undefined, path: string): unknown {
+	if (!obj) return undefined;
+	if (!path.includes('.')) return obj[path];
+	const parts = path.split('.');
+	let current: any = obj;
+	for (const part of parts) {
+		if (current === undefined || current === null) return undefined;
+		current = current[part];
+	}
+	return current;
+}
+
+/**
+ * Set a nested property value using dot-notation (e.g. "image.src")
+ */
+export function setNestedProperty(obj: Record<string, unknown>, path: string, value: unknown): void {
+	if (!path.includes('.')) {
+		obj[path] = value;
+		return;
+	}
+	const parts = path.split('.');
+	const lastProp = parts.pop()!;
+	let current = obj;
+	for (const part of parts) {
+		if (current[part] === undefined || current[part] === null || typeof current[part] !== 'object') {
+			current[part] = {};
+		}
+		current = current[part] as Record<string, unknown>;
+	}
+	current[lastProp] = value;
+}
+
+/**
  * Check if a file is an MDX file
  */
 export function isMdxFile(file: TFile): boolean {

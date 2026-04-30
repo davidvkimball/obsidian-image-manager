@@ -40,7 +40,7 @@ import {
 	DeviceType,
 	DEFAULT_BANNER_DEVICE_SETTINGS,
 } from '../types';
-import { getFrontmatter } from '../utils/mdx-frontmatter';
+import { getFrontmatter, getNestedProperty } from '../utils/mdx-frontmatter';
 
 // CSS class names
 const CSS_CLASSES = {
@@ -203,15 +203,15 @@ export class BannerService {
 				// Check if hide property is enabled and set to truthy value
 				if (propertySettings.hidePropertyEnabled && propertySettings.hideProperty) {
 					const hideProp = propertySettings.hideProperty;
-					const hideValue: unknown = cache.frontmatter[hideProp];
+					const hideValue: unknown = getNestedProperty(cache.frontmatter, hideProp);
 					if (hideValue === true || hideValue === 'true' || hideValue === 1 || hideValue === '1') {
 						return newData;
 					}
 				}
 
 				// Check if banner or icon property exists in cache
-				const hasBannerProperty = cache.frontmatter[imageProp] != null;
-				const hasIconProperty = deviceSettings.iconEnabled && cache.frontmatter[iconProp] != null;
+				const hasBannerProperty = getNestedProperty(cache.frontmatter, imageProp) != null;
+				const hasIconProperty = deviceSettings.iconEnabled && getNestedProperty(cache.frontmatter, iconProp) != null;
 
 				// If cache is populated and no banner/icon property exists, return early
 				// This is safe because the cache is definitive for MD files
@@ -235,7 +235,7 @@ export class BannerService {
 		// Check if hide property is enabled and set to truthy value
 		if (propertySettings.hidePropertyEnabled && propertySettings.hideProperty) {
 			const hideProp = propertySettings.hideProperty;
-			const hideValue: unknown = frontmatter[hideProp];
+			const hideValue: unknown = getNestedProperty(frontmatter, hideProp);
 			if (hideValue === true || hideValue === 'true' || hideValue === 1 || hideValue === '1') {
 				return newData;
 			}
@@ -245,7 +245,7 @@ export class BannerService {
 		const iconProp = propertySettings.iconProperty;
 
 		// Parse image property
-		const imageValue = frontmatter[imageProp];
+		const imageValue = getNestedProperty(frontmatter, imageProp);
 		if (imageValue && typeof imageValue === 'string') {
 			newData.image = imageValue;
 			newData.filepath = file.path;
@@ -267,7 +267,7 @@ export class BannerService {
 
 		// Parse icon property if enabled
 		if (deviceSettings.iconEnabled) {
-			const iconValue = frontmatter[iconProp];
+			const iconValue = getNestedProperty(frontmatter, iconProp);
 			if (iconValue && typeof iconValue === 'string') {
 				newData.icon = iconValue;
 				if (oldData.icon !== newData.icon) {
