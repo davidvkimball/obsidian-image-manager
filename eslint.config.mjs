@@ -62,6 +62,16 @@ export default defineConfig([
       "no-console": ["error", { "allow": ["warn", "error", "debug"] }],
       // Require await in async functions
       "@typescript-eslint/require-await": "error",
+      // obsidianmd/ui/sentence-case can't be disabled via inline comments
+      // (bot policy) and false-positives on legitimate text: service brand
+      // names (Pexels, Pixabay), example URLs in setDesc, and literal
+      // identifier placeholders (alt, hideBanner, the "200 or 200x100" size
+      // hint). Tune the rule's own ignore options so real text isn't
+      // mangled, while it stays active for genuine casing mistakes elsewhere.
+      "obsidianmd/ui/sentence-case": ["error", {
+        ignoreWords: ["Pexels", "Pixabay", "Descriptive"],
+        ignoreRegex: ["https?://", "^alt$", "^hideBanner$", "^\\d"]
+      }],
     },
   },
   {
