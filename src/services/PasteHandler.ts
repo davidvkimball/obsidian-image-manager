@@ -53,7 +53,7 @@ export class PasteHandler {
 		}
 
 		// Check if we're in a frontmatter property field - if so, let property paste handler take over
-		const activeEl = document.activeElement as HTMLElement;
+		const activeEl = activeDocument.activeElement as HTMLElement;
 		if (activeEl && this.isFrontmatterField(activeEl)) {
 			return false; // Let property paste handler handle it
 		}
@@ -114,7 +114,7 @@ export class PasteHandler {
 			return false;
 		}
 
-		const activeEl = document.activeElement as HTMLElement;
+		const activeEl = activeDocument.activeElement as HTMLElement;
 		if (!activeEl) {
 			return false;
 		}
@@ -154,7 +154,7 @@ export class PasteHandler {
 
 		// Double-check we're still in a property field (element might have changed)
 		// and that we have an active file before preventing default
-		const currentEl = document.activeElement as HTMLElement;
+		const currentEl = activeDocument.activeElement as HTMLElement;
 		if (!currentEl || !this.isFrontmatterField(currentEl)) {
 			return false;
 		}
@@ -198,11 +198,11 @@ export class PasteHandler {
 			);
 
 			// Wait for Obsidian to process the file change and update metadata cache
-			await new Promise(resolve => setTimeout(resolve, 300));
+			await new Promise(resolve => window.setTimeout(resolve, 300));
 
 			// Try multiple approaches to update the UI
 			// Approach 1: Find and update the input field directly
-			const propertyEl = document.querySelector(
+			const propertyEl = activeDocument.querySelector(
 				`.metadata-property[data-property-key="${propertyName}"]`
 			);
 
@@ -248,18 +248,18 @@ export class PasteHandler {
 				inputEl.dispatchEvent(inputEvent);
 
 				// Small delay before change event
-				setTimeout(() => {
+				window.setTimeout(() => {
 					inputEl.dispatchEvent(changeEvent);
 
 					// Focus and blur to trigger Obsidian's update mechanism
 					if (inputEl instanceof HTMLElement) {
 						inputEl.focus();
-						setTimeout(() => {
+						window.setTimeout(() => {
 							inputEl.blur();
 							inputEl.dispatchEvent(blurEvent);
 
 							// Focus the editor to complete the action
-							setTimeout(() => {
+							window.setTimeout(() => {
 								const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 								if (view?.editor) {
 									view.editor.focus();
@@ -300,9 +300,9 @@ export class PasteHandler {
 			element.matches('input.metadata-input') ||
 			element.matches('textarea.metadata-input') ||
 			// Also check if the element itself is an input/textarea/div inside a property
-			((element instanceof HTMLInputElement ||
-				element instanceof HTMLTextAreaElement ||
-				(element instanceof HTMLDivElement && element.classList.contains('metadata-input-longtext'))) &&
+			((element.instanceOf(HTMLInputElement) ||
+				element.instanceOf(HTMLTextAreaElement) ||
+				(element.instanceOf(HTMLDivElement) && element.classList.contains('metadata-input-longtext'))) &&
 				propertyEl !== null)
 		);
 	}

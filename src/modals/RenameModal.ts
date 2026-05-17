@@ -55,7 +55,7 @@ export class RenameModal extends Modal {
 		this.renderButtons(contentEl);
 
 		// Focus and select input
-		setTimeout(() => {
+		window.setTimeout(() => {
 			if (this.nameInput) {
 				this.nameInput.focus();
 				this.nameInput.select();

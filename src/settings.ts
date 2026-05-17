@@ -111,7 +111,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 							this.display(); // Refresh to show/hide path input
 
 							// Restore scroll position after rendering
-							requestAnimationFrame(() => {
+							window.requestAnimationFrame(() => {
 								if (scrollContainer) {
 									scrollContainer.scrollTop = scrollTop;
 								}
@@ -203,7 +203,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.setDesc('Optional proxy server (leave empty to use built-in)')
 				.addText(text => {
 					text
-						.setPlaceholder('https://your-proxy.com/')
+						.setPlaceholder('your-proxy.com')
 						.setValue(this.plugin.settings.unsplashProxyServer)
 						.onChange(async value => {
 							this.plugin.settings.unsplashProxyServer = value;
@@ -218,7 +218,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 			if (requireApiVersion('1.11.4')) {
 				// Use SecretComponent for newer versions
 				setting
-					.setDesc('Choose a secret that contains your Pexels API key.')
+					.setDesc('Choose a secret that contains your API key.')
 					.addComponent((el) => {
 						// Use dynamic require to access SecretComponent (may not be in type definitions)
 						// eslint-disable-next-line @typescript-eslint/no-require-imports -- SecretComponent not in type definitions for all Obsidian versions
@@ -237,7 +237,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 			} else {
 				// Fall back to plaintext for older versions
 				setting
-					.setDesc('Get your API key from https://www.pexels.com/api/new/')
+					.setDesc('Get a free Pexels API key from pexels.com')
 					.addText(text => {
 						text
 							.setPlaceholder('Pexels API key')
@@ -256,7 +256,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 			if (requireApiVersion('1.11.4')) {
 				// Use SecretComponent for newer versions
 				setting
-					.setDesc('Choose a secret that contains your Pixabay API key.')
+					.setDesc('Choose a secret that contains your API key for the image provider.')
 					.addComponent((el) => {
 						// Use dynamic require to access SecretComponent (may not be in type definitions)
 						// eslint-disable-next-line @typescript-eslint/no-require-imports -- SecretComponent not in type definitions for all Obsidian versions
@@ -275,7 +275,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 			} else {
 				// Fall back to plaintext for older versions
 				setting
-					.setDesc('Get your API key from https://pixabay.com/api/docs/')
+					.setDesc('Get a free Pixabay API key from pixabay.com')
 					.addText(text => {
 						text
 							.setPlaceholder('Pixabay API key')
@@ -294,7 +294,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 				.setDesc('Set the size of the image when inserting. Format could be only the width "200" or the width and height "200x100". Leave empty for no size.')
 				.addText(text => {
 					text
-						.setPlaceholder('200 or 200x100')
+						.setPlaceholder('Width: 200 or 200x100')
 						.setValue(this.plugin.settings.insertSize)
 						.onChange(async value => {
 							this.plugin.settings.insertSize = value;
@@ -375,7 +375,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 							this.display(); // Refresh to show/hide custom format input
 
 							// Restore scroll position after rendering
-							requestAnimationFrame(() => {
+							window.requestAnimationFrame(() => {
 								if (scrollContainer) {
 									scrollContainer.scrollTop = scrollTop;
 								}
@@ -435,10 +435,10 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 		group.addSetting(setting => {
 			setting
 				.setName('Alt text property name')
-				.setDesc('Property name to use for image alt text (description) when inserting to properties. If "Descriptive images" is enabled, this will be filled with the description you provide. If disabled, it will be filled with the search term for external images.')
+				.setDesc('Property name to use for image alt text (description) when inserting to properties. If "descriptive images" is enabled, this will be filled with the description you provide. If disabled, it will be filled with the search term for external images.')
 				.addText(text => {
 					text
-						.setPlaceholder('alt')
+						.setPlaceholder('Alt')
 						.setValue(this.plugin.settings.altTextProperty)
 						.onChange(async value => {
 							this.plugin.settings.altTextProperty = value;
@@ -471,7 +471,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 							this.display(); // Refresh to show/hide sub-options
 
 							// Restore scroll position after rendering
-							requestAnimationFrame(() => {
+							window.requestAnimationFrame(() => {
 								if (scrollContainer) {
 									scrollContainer.scrollTop = scrollTop;
 								}
@@ -669,7 +669,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 
 		this.display();
 
-		requestAnimationFrame(() => {
+		window.requestAnimationFrame(() => {
 			if (scrollContainer) {
 				scrollContainer.scrollTop = scrollTop;
 			}
@@ -879,7 +879,7 @@ export class ImageManagerSettingTab extends PluginSettingTab {
 					.setDesc('Name of the property that, when set to true, will hide the banner for that note')
 					.addText(text => {
 						text
-							.setPlaceholder('hideBanner')
+							.setPlaceholder('Property name')
 							.setValue(propertySettings.hideProperty)
 							.onChange(async value => {
 								this.plugin.settings.banner.properties.hideProperty = value || '';

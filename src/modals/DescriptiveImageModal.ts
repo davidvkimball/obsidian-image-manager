@@ -101,7 +101,7 @@ export class DescriptiveImageModal extends Modal {
 		}
 
 		// Focus input
-		setTimeout(() => {
+		window.setTimeout(() => {
 			if (this.descriptionInput) {
 				this.descriptionInput.focus();
 			}
@@ -124,10 +124,10 @@ export class DescriptiveImageModal extends Modal {
 	private updatePreview(): void {
 		if (!this.description || this.description.trim() === '') {
 			if (this.fileNamePreviewEl) {
-				this.fileNamePreviewEl.setText('(enter description)');
+				this.fileNamePreviewEl.setText('(Enter description)');
 			}
 			if (this.previewEl) {
-				this.previewEl.setText('(enter description)');
+				this.previewEl.setText('(Enter description)');
 			}
 			return;
 		}

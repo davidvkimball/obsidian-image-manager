@@ -101,7 +101,7 @@ export default class ImageManagerPlugin extends Plugin {
 				secretStorage.setSecret(secretId, this.settings.pexelsApiKey);
 				this.settings.pexelsApiKeySecretId = secretId;
 				migrated = true;
-				console.info('[Image Manager] Successfully migrated Pexels API key to SecretStorage');
+				console.debug('[Image Manager] Successfully migrated Pexels API key to SecretStorage');
 			} catch (error) {
 				console.error('[Image Manager] Failed to migrate Pexels API key to SecretStorage:', error);
 				failures.push('Pexels');
@@ -115,7 +115,7 @@ export default class ImageManagerPlugin extends Plugin {
 				secretStorage.setSecret(secretId, this.settings.pixabayApiKey);
 				this.settings.pixabayApiKeySecretId = secretId;
 				migrated = true;
-				console.info('[Image Manager] Successfully migrated Pixabay API key to SecretStorage');
+				console.debug('[Image Manager] Successfully migrated Pixabay API key to SecretStorage');
 			} catch (error) {
 				console.error('[Image Manager] Failed to migrate Pixabay API key to SecretStorage:', error);
 				failures.push('Pixabay');
@@ -125,7 +125,7 @@ export default class ImageManagerPlugin extends Plugin {
 		// Save settings if migration occurred
 		if (migrated) {
 			await this.saveSettings();
-			console.info('[Image Manager] API key migration completed');
+			console.debug('[Image Manager] API key migration completed');
 		}
 
 		// Show Notice if any migrations failed
@@ -162,23 +162,34 @@ export default class ImageManagerPlugin extends Plugin {
 	 * Register event handlers
 	 */
 	private registerEventHandlers(): void {
-		// Editor paste handler
+		// Editor paste handler. handleEditorPaste calls evt.preventDefault()
+		// itself — synchronously and *only* when it actually takes over an
+		// image paste (see PasteHandler). Preventing default here
+		// unconditionally would swallow normal text pastes, so the
+		// obsidianmd/editor-drop-paste heuristic (which can't see across the
+		// delegate) is disabled after the genuine defaultPrevented guard.
 		this.registerEvent(
+			// eslint-disable-next-line obsidianmd/editor-drop-paste -- preventDefault is called conditionally inside handleEditorPaste only when an image is handled; unconditional preventDefault here would break normal text paste.
 			this.app.workspace.on('editor-paste', (evt: ClipboardEvent, editor: Editor, view: MarkdownView) => {
+				if (evt.defaultPrevented) return;
 				void this.pasteHandler.handleEditorPaste(evt, editor, view);
 			})
 		);
 
-		// Editor drop handler
+		// Editor drop handler. Same delegation contract as editor-paste:
+		// handleEditorDrop conditionally calls evt.preventDefault() only when
+		// it handles an image drop.
 		this.registerEvent(
+			// eslint-disable-next-line obsidianmd/editor-drop-paste -- preventDefault is called conditionally inside handleEditorDrop only when an image is handled; unconditional preventDefault here would break normal drag-and-drop.
 			this.app.workspace.on('editor-drop', (evt: DragEvent, editor: Editor, view: MarkdownView) => {
+				if (evt.defaultPrevented) return;
 				void this.dropHandler.handleEditorDrop(evt, editor, view);
 			})
 		);
 
 		// DOM paste handler for frontmatter properties
 		// Use capture phase but be defensive - only handle if we're definitely in a property field
-		this.registerDomEvent(document, 'paste', (evt: ClipboardEvent) => {
+		this.registerDomEvent(activeDocument, 'paste', (evt: ClipboardEvent) => {
 			// Only handle if we're in the Obsidian workspace (not system UI like title bar)
 			const target = evt.target as HTMLElement;
 			if (!target || !target.closest('.workspace')) {
@@ -200,7 +211,7 @@ export default class ImageManagerPlugin extends Plugin {
 						// Fire-and-forget: don't block file open
 						void (async () => {
 							// Small delay to let file fully load
-							await new Promise(resolve => setTimeout(resolve, 500));
+							await new Promise(resolve => window.setTimeout(resolve, 500));
 
 							// Check if this is the active file
 							const activeFile = this.app.workspace.getActiveFile();

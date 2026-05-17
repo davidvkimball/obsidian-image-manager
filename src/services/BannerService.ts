@@ -359,13 +359,13 @@ export class BannerService {
 		containers.forEach(container => {
 			let element = container.querySelector(`.${CSS_CLASSES.Main}`) as HTMLElement;
 			if (!element) {
-				element = document.createElement('div');
+				element = activeDocument.createElement('div');
 				element.classList.add(CSS_CLASSES.Main);
 			}
 
 			let content = element.querySelector(`.${CSS_CLASSES.Content}`) as HTMLElement;
 			if (!content) {
-				content = document.createElement('div');
+				content = activeDocument.createElement('div');
 				content.classList.add(CSS_CLASSES.Content);
 				element.appendChild(content);
 			}
@@ -388,7 +388,7 @@ export class BannerService {
 				};
 
 				if (imgOptions.type === BannerContentType.Video) {
-					const video = document.createElement('video');
+					const video = activeDocument.createElement('video');
 					video.controls = false;
 					video.autoplay = true;
 					video.muted = true;
@@ -424,9 +424,9 @@ export class BannerService {
 
 			if (deviceSettings.iconEnabled && icon) {
 				if (!hasContainer) {
-					iconContainer = document.createElement('div');
+					iconContainer = activeDocument.createElement('div');
 					iconContainer.classList.add(CSS_CLASSES.Icon);
-					const innerDiv = document.createElement('div');
+					const innerDiv = activeDocument.createElement('div');
 					iconContainer.appendChild(innerDiv);
 					banner.prepend(iconContainer);
 				}
@@ -476,7 +476,7 @@ export class BannerService {
 				if (shouldAnimate) {
 					// Force reflow and start animation on next frame
 					void banner.offsetHeight; // Force reflow
-					requestAnimationFrame(() => {
+					window.requestAnimationFrame(() => {
 						// Animation should start now
 						banner.onanimationend = () => {
 							banner.classList.add(CSS_CLASSES.Static);
@@ -559,7 +559,7 @@ export class BannerService {
 			cssVars['--im-banner-icon-background'] = iconFrame && deviceSettings.iconBackground ? 'revert-layer' : 'transparent';
 		}
 
-		setCssProperties(document.body, cssVars);
+		setCssProperties(activeDocument.body, cssVars);
 
 		this.processAll(true);
 	}
@@ -798,7 +798,7 @@ export class BannerService {
 	 * Uses actual DOM measurement for accurate sizing
 	 */
 	private calculateFontSize(textContent: string, iconSize: number): string {
-		const temp = document.createElement('span');
+		const temp = activeDocument.createElement('span');
 		temp.addClass('im-measure-temp');
 		// Use setCssProperties for style manipulation (required for measurement element)
 		// This element is temporary and immediately removed after measurement
@@ -811,7 +811,7 @@ export class BannerService {
 			left: '-9999px',
 		});
 		temp.textContent = textContent.toUpperCase();
-		document.body.appendChild(temp);
+		activeDocument.body.appendChild(temp);
 
 		const checkWidth = iconSize - 16;
 		let fontSize = iconSize; // Start big
@@ -822,7 +822,7 @@ export class BannerService {
 			setCssProperties(temp, { 'font-size': `${fontSize}px` });
 		}
 
-		document.body.removeChild(temp);
+		activeDocument.body.removeChild(temp);
 		return `${fontSize}px`;
 	}
 
@@ -859,7 +859,7 @@ export class BannerService {
 	 */
 	destroy(): void {
 		// Remove all banners
-		document.querySelectorAll(`.${CSS_CLASSES.Main}`).forEach(el => el.remove());
+		activeDocument.querySelectorAll(`.${CSS_CLASSES.Main}`).forEach(el => el.remove());
 
 		// Clear data store
 		bannerDataStore.clear();

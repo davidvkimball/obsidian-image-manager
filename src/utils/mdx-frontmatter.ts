@@ -13,10 +13,11 @@ export function getNestedProperty(obj: Record<string, unknown> | null | undefine
 	if (!obj) return undefined;
 	if (!path.includes('.')) return obj[path];
 	const parts = path.split('.');
-	let current: any = obj;
+	let current: unknown = obj;
 	for (const part of parts) {
 		if (current === undefined || current === null) return undefined;
-		current = current[part];
+		if (typeof current !== 'object') return undefined;
+		current = (current as Record<string, unknown>)[part];
 	}
 	return current;
 }

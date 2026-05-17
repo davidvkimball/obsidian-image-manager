@@ -57,7 +57,7 @@ export class ConfirmModal extends Modal {
 		});
 
 		// Focus the confirm button
-		setTimeout(() => {
+		window.setTimeout(() => {
 			const confirmButton = buttonContainer.querySelector('.mod-cta') as HTMLButtonElement;
 			confirmButton?.focus();
 		}, 50);

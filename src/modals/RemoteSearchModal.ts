@@ -88,7 +88,7 @@ export class RemoteSearchModal extends Modal {
 		// Loading container
 		this.loadingContainer = this.container.createDiv({ cls: 'loading-container' });
 		const loaderIcon = this.loadingContainer.createDiv({ cls: 'loader-icon' });
-		const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		const svg = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
 		svg.setAttribute('width', '24');
 		svg.setAttribute('height', '24');
 		svg.setAttribute('viewBox', '0 0 24 24');
@@ -98,7 +98,7 @@ export class RemoteSearchModal extends Modal {
 		svg.setAttribute('stroke-linecap', 'round');
 		svg.setAttribute('stroke-linejoin', 'round');
 		svg.classList.add('lucide', 'lucide-loader-circle');
-		const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+		const path = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
 		path.setAttribute('d', 'M21 12a9 9 0 1 1-6.219-8.56');
 		svg.appendChild(path);
 		loaderIcon.appendChild(svg);
@@ -112,7 +112,7 @@ export class RemoteSearchModal extends Modal {
 		this.setupEventListeners();
 
 		// Focus input
-		setTimeout(() => {
+		window.setTimeout(() => {
 			this.queryInput?.focus();
 		}, 50);
 	}
