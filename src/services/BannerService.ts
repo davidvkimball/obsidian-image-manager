@@ -78,6 +78,15 @@ export class BannerService {
 		});
 	}
 
+	// The main app window's document. Obsidian 1.13.0+ opens Settings in a
+	// separate window, so the focused-window global points at the Settings
+	// window while a banner setting is being changed — writing banner CSS
+	// variables or building banner elements there would target the wrong
+	// window. Banners always live in the main window's note views.
+	private get doc(): Document {
+		return this.app.workspace.containerEl.ownerDocument;
+	}
+
 	/**
 	 * Update settings reference
 	 */
@@ -359,13 +368,13 @@ export class BannerService {
 		containers.forEach(container => {
 			let element = container.querySelector(`.${CSS_CLASSES.Main}`) as HTMLElement;
 			if (!element) {
-				element = activeDocument.createElement('div');
+				element = this.doc.createElement('div');
 				element.classList.add(CSS_CLASSES.Main);
 			}
 
 			let content = element.querySelector(`.${CSS_CLASSES.Content}`) as HTMLElement;
 			if (!content) {
-				content = activeDocument.createElement('div');
+				content = this.doc.createElement('div');
 				content.classList.add(CSS_CLASSES.Content);
 				element.appendChild(content);
 			}
@@ -388,7 +397,7 @@ export class BannerService {
 				};
 
 				if (imgOptions.type === BannerContentType.Video) {
-					const video = activeDocument.createElement('video');
+					const video = this.doc.createElement('video');
 					video.controls = false;
 					video.autoplay = true;
 					video.muted = true;
@@ -424,9 +433,9 @@ export class BannerService {
 
 			if (deviceSettings.iconEnabled && icon) {
 				if (!hasContainer) {
-					iconContainer = activeDocument.createElement('div');
+					iconContainer = this.doc.createElement('div');
 					iconContainer.classList.add(CSS_CLASSES.Icon);
-					const innerDiv = activeDocument.createElement('div');
+					const innerDiv = this.doc.createElement('div');
 					iconContainer.appendChild(innerDiv);
 					banner.prepend(iconContainer);
 				}
@@ -559,7 +568,7 @@ export class BannerService {
 			cssVars['--im-banner-icon-background'] = iconFrame && deviceSettings.iconBackground ? 'revert-layer' : 'transparent';
 		}
 
-		setCssProperties(activeDocument.body, cssVars);
+		setCssProperties(this.doc.body, cssVars);
 
 		this.processAll(true);
 	}
@@ -798,7 +807,7 @@ export class BannerService {
 	 * Uses actual DOM measurement for accurate sizing
 	 */
 	private calculateFontSize(textContent: string, iconSize: number): string {
-		const temp = activeDocument.createElement('span');
+		const temp = this.doc.createElement('span');
 		temp.addClass('im-measure-temp');
 		// Use setCssProperties for style manipulation (required for measurement element)
 		// This element is temporary and immediately removed after measurement
@@ -811,7 +820,7 @@ export class BannerService {
 			left: '-9999px',
 		});
 		temp.textContent = textContent.toUpperCase();
-		activeDocument.body.appendChild(temp);
+		this.doc.body.appendChild(temp);
 
 		const checkWidth = iconSize - 16;
 		let fontSize = iconSize; // Start big
@@ -822,7 +831,7 @@ export class BannerService {
 			setCssProperties(temp, { 'font-size': `${fontSize}px` });
 		}
 
-		activeDocument.body.removeChild(temp);
+		this.doc.body.removeChild(temp);
 		return `${fontSize}px`;
 	}
 
@@ -859,7 +868,7 @@ export class BannerService {
 	 */
 	destroy(): void {
 		// Remove all banners
-		activeDocument.querySelectorAll(`.${CSS_CLASSES.Main}`).forEach(el => el.remove());
+		this.doc.querySelectorAll(`.${CSS_CLASSES.Main}`).forEach(el => el.remove());
 
 		// Clear data store
 		bannerDataStore.clear();
