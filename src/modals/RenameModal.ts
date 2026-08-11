@@ -85,12 +85,12 @@ export class RenameModal extends Modal {
 		// Original path
 		const originalItem = infoList.createEl('li');
 		originalItem.createEl('strong', { text: 'Original: ' });
-		originalItem.createEl('span', { text: this.imageFile.path });
+		originalItem.createSpan({ text: this.imageFile.path });
 
 		// New path preview
 		const newItem = infoList.createEl('li');
 		newItem.createEl('strong', { text: 'New path: ' });
-		this.previewEl = newItem.createEl('span', { text: this.getNewPath(this.currentName) });
+		this.previewEl = newItem.createSpan({ text: this.getNewPath(this.currentName) });
 	}
 
 	private renderNameInput(containerEl: HTMLElement): void {

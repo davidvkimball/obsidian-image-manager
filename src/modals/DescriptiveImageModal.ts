@@ -72,11 +72,11 @@ export class DescriptiveImageModal extends Modal {
 		
 		const fileNamePreview = previewContainer.createEl('p');
 		fileNamePreview.createEl('strong', { text: 'Filename: ' });
-		this.fileNamePreviewEl = fileNamePreview.createEl('span');
+		this.fileNamePreviewEl = fileNamePreview.createSpan();
 		
 		const linkPreview = previewContainer.createEl('p');
 		linkPreview.createEl('strong', { text: 'Link: ' });
-		this.previewEl = linkPreview.createEl('span', { cls: 'code' });
+		this.previewEl = linkPreview.createSpan({ cls: 'code' });
 
 		// Error display
 		this.errorEl = contentEl.createDiv({ cls: 'image-manager-error image-manager-error-hidden' });
