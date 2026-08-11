@@ -169,9 +169,11 @@ export default class ImageManagerPlugin extends Plugin {
 		// obsidianmd/editor-drop-paste heuristic (which can't see across the
 		// delegate) is disabled after the genuine defaultPrevented guard.
 		this.registerEvent(
-			// eslint-disable-next-line obsidianmd/editor-drop-paste -- preventDefault is called conditionally inside handleEditorPaste only when an image is handled; unconditional preventDefault here would break normal text paste.
 			this.app.workspace.on('editor-paste', (evt: ClipboardEvent, editor: Editor, view: MarkdownView) => {
 				if (evt.defaultPrevented) return;
+				// Decide synchronously, so a plain text paste is never swallowed.
+				if (!this.pasteHandler.willHandlePaste(evt)) return;
+				evt.preventDefault();
 				void this.pasteHandler.handleEditorPaste(evt, editor, view);
 			})
 		);
@@ -180,9 +182,11 @@ export default class ImageManagerPlugin extends Plugin {
 		// handleEditorDrop conditionally calls evt.preventDefault() only when
 		// it handles an image drop.
 		this.registerEvent(
-			// eslint-disable-next-line obsidianmd/editor-drop-paste -- preventDefault is called conditionally inside handleEditorDrop only when an image is handled; unconditional preventDefault here would break normal drag-and-drop.
 			this.app.workspace.on('editor-drop', (evt: DragEvent, editor: Editor, view: MarkdownView) => {
 				if (evt.defaultPrevented) return;
+				// Decide synchronously, so a normal drag and drop is never swallowed.
+				if (!this.dropHandler.willHandleDrop(evt)) return;
+				evt.preventDefault();
 				void this.dropHandler.handleEditorDrop(evt, editor, view);
 			})
 		);

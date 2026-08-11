@@ -43,6 +43,25 @@ export class PasteHandler {
 	 * Handle editor paste event
 	 * This is registered via workspace.on('editor-paste')
 	 */
+	/**
+	 * Synchronous mirror of the guards at the top of handleEditorPaste, so the
+	 * workspace handler can decide whether to call preventDefault() itself.
+	 * preventDefault must be called synchronously, and it must not fire for a
+	 * plain text paste, so the decision cannot wait on the async handler.
+	 */
+	willHandlePaste(evt: ClipboardEvent): boolean {
+		if (!this.settings.showRenameDialog || !this.settings.enableRenameOnPaste) return false;
+		const activeEl = activeDocument.activeElement as HTMLElement;
+		if (activeEl && this.isFrontmatterField(activeEl)) return false;
+		const files = evt.clipboardData?.files;
+		if (!files || files.length === 0) return false;
+		for (let i = 0; i < files.length; i++) {
+			const f = files.item(i);
+			if (f && f.type.startsWith('image/')) return true;
+		}
+		return false;
+	}
+
 	async handleEditorPaste(
 		evt: ClipboardEvent,
 		editor: Editor,
@@ -347,6 +366,21 @@ export class DropHandler {
 	/**
 	 * Handle editor drop event
 	 */
+	/**
+	 * Synchronous mirror of the guards at the top of handleEditorDrop. See
+	 * willHandlePaste for why the decision has to be synchronous.
+	 */
+	willHandleDrop(evt: DragEvent): boolean {
+		if (!this.settings.showRenameDialog || !this.settings.enableRenameOnDrop) return false;
+		const files = evt.dataTransfer?.files;
+		if (!files || files.length === 0) return false;
+		for (let i = 0; i < files.length; i++) {
+			const f = files.item(i);
+			if (f && f.type.startsWith('image/')) return true;
+		}
+		return false;
+	}
+
 	async handleEditorDrop(
 		evt: DragEvent,
 		editor: Editor,
