@@ -243,8 +243,12 @@ export class RemoteSearchModal extends Modal {
 			});
 
 			result.addEventListener('mousemove', () => {
+				if (this.selectedImage === i) return;
+
+				// Keep the tapped element attached for iOS's subsequent click event.
+				this.imagesList?.querySelector('.is-selected')?.removeClass('is-selected');
 				this.selectedImage = i;
-				this.renderResults();
+				result.addClass('is-selected');
 			});
 		}
 
