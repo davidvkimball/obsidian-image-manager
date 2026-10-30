@@ -5,6 +5,7 @@
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
+		"test": "node --test tests/*.test.mjs",
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs build",
 		"lint": "node scripts/lint-wrapper.mjs",
