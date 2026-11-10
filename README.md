@@ -8,6 +8,8 @@ Image Manager unifies functionality from multiple image-related plugins into one
 
 Part of the [Vault CMS](https://github.com/davidvkimball/vault-cms) project.
 
+Writing for an Astro site without Obsidian? [Zeku](https://zeku.dev) is a desktop writing app from the same developer (paid, with a 14-day free trial) that works on the same project as Vault CMS.
+
 ## Features
 
 ### Image Insertion
